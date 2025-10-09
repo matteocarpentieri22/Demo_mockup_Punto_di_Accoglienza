@@ -1,23 +1,10 @@
 import { DocumentsSection } from "@/components/DocumentsSection";
+import { Navbar } from "@/components/Navbar";
 
 const Documenti = () => {
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-primary">IOV</h1>
-              <p className="text-sm text-muted-foreground">Istituto Oncologico Veneto</p>
-            </div>
-            <div className="text-right">
-              <h2 className="text-lg font-semibold text-foreground">Documenti PDTA</h2>
-              <p className="text-sm text-muted-foreground">Documentazione per i Percorsi Diagnostico-Terapeutici</p>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Navbar />
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-12">

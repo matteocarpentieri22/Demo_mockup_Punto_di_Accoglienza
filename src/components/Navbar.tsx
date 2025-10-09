@@ -4,32 +4,30 @@ import { Button } from "@/components/ui/button";
 
 export const Navbar = () => {
   return (
-    <header className="border-b bg-card sticky top-0 z-50">
-      <div className="container mx-auto px-4 py-4">
+    <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50 shadow-sm">
+      <div className="container mx-auto px-6 py-5">
         <div className="flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <div>
-              <h1 className="text-2xl font-bold text-primary">IOV</h1>
-              <p className="text-xs text-muted-foreground">Istituto Oncologico Veneto</p>
-            </div>
+          <Link to="/" className="flex flex-col">
+            <h1 className="text-2xl font-bold text-primary">Punto di Accoglienza IOV</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">Portale Medici di Medicina Generale</p>
           </Link>
           
-          <nav className="flex items-center gap-4">
+          <nav className="flex items-center gap-3">
             <Link to="/documenti">
-              <Button variant="ghost" className="gap-2">
+              <Button variant="ghost" className="gap-2 hover:bg-primary/10">
                 <FileText className="w-4 h-4" />
-                Documenti PDTA
+                <span className="hidden sm:inline">Documenti PDTA</span>
               </Button>
             </Link>
             
             <a 
-              href="https://cup.sanita.veneto.it" 
+              href="https://www.ioveneto.it/prenotazioni-referti-e-disdette/servizio-sanitario-nazionale/" 
               target="_blank" 
               rel="noopener noreferrer"
             >
-              <Button variant="outline" className="gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground">
+              <Button variant="default" className="gap-2">
                 <ExternalLink className="w-4 h-4" />
-                CUP Veneto
+                <span className="hidden sm:inline">Prenotazione CUP</span>
               </Button>
             </a>
           </nav>

@@ -16,15 +16,6 @@ const Index = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-12">
-        {/* Hero Section */}
-        <div className="text-center mb-16">
-          <h1 className="text-4xl font-bold text-foreground mb-4">
-            Benvenuto al Sistema PDTA
-          </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Strumento di supporto per l'accesso ai Percorsi Diagnostico-Terapeutici Assistenziali dell'IOV
-          </p>
-        </div>
 
         {/* Main Cards */}
         <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
