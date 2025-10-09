@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { MessageSquare, ClipboardCheck, FileText, ExternalLink } from "lucide-react";
+import { MessageSquare, ClipboardCheck } from "lucide-react";
 import { ChatbotDialog } from "@/components/ChatbotDialog";
 import { DirectSelectionDialog } from "@/components/DirectSelectionDialog";
-import { DocumentsSection } from "@/components/DocumentsSection";
+import { Navbar } from "@/components/Navbar";
 
 const Index = () => {
   const [chatbotOpen, setChatbotOpen] = useState(false);
@@ -13,21 +12,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-primary">IOV</h1>
-              <p className="text-sm text-muted-foreground">Istituto Oncologico Veneto</p>
-            </div>
-            <div className="text-right">
-              <h2 className="text-lg font-semibold text-foreground">Portale Medici di Medicina Generale</h2>
-              <p className="text-sm text-muted-foreground">Accesso ai Percorsi Diagnostico-Terapeutici Assistenziali</p>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Navbar />
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-12">
@@ -42,7 +27,7 @@ const Index = () => {
         </div>
 
         {/* Main Cards */}
-        <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto mb-20">
+        <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
           {/* Chatbot Card */}
           <Card className="hover:shadow-lg transition-shadow cursor-pointer border-2 hover:border-primary/50" onClick={() => setChatbotOpen(true)}>
             <CardHeader className="text-center pb-4">
@@ -81,27 +66,6 @@ const Index = () => {
               </p>
               <Button className="w-full" variant="secondary" size="lg">
                 Seleziona PDTA
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Documents Section */}
-        <DocumentsSection />
-
-        {/* CUP Link Section */}
-        <div className="mt-16 text-center">
-          <Card className="max-w-2xl mx-auto bg-primary/5 border-primary/20">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-center gap-3 mb-4">
-                <ExternalLink className="w-6 h-6 text-primary" />
-                <h3 className="text-xl font-semibold text-foreground">Prenotazione CUP</h3>
-              </div>
-              <p className="text-muted-foreground mb-6">
-                Effettua la prenotazione per il paziente attraverso il sistema CUP regionale
-              </p>
-              <Button variant="outline" size="lg" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground">
-                Vai al CUP
               </Button>
             </CardContent>
           </Card>
