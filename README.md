@@ -1,73 +1,152 @@
-# Welcome to your Lovable project
+# PDTA Navigator Demo
 
-## Project info
+Sistema demo per la gestione dei Percorsi Diagnostico Terapeutici Assistenziali (PDTA) in ambito oncologico.
 
-**URL**: https://lovable.dev/projects/6147d512-1007-4a67-abb5-3f862bd563e6
+## 🏥 Panoramica del Sistema
 
-## How can I edit this code?
+Il PDTA Navigator è una piattaforma web che supporta la gestione integrata dei pazienti oncologici attraverso diversi moduli specializzati:
 
-There are several ways of editing your application.
+- **Modulo Oncologico v1**: Sistema base per la gestione dei pazienti oncologici
+- **Modulo Oncologico v2**: Sistema avanzato con profili separati per oncologi/radioterapisti e case manager
+- **Modulo Paziente**: Interfaccia dedicata ai pazienti per consultare informazioni e questionari
 
-**Use Lovable**
+## 🚀 Avvio Rapido
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/6147d512-1007-4a67-abb5-3f862bd563e6) and start prompting.
+### Prerequisiti
+- Node.js (versione 18 o superiore)
+- npm o yarn
 
-Changes made via Lovable will be committed automatically to this repo.
+### Installazione
+```bash
+# Clona il repository
+git clone <repository-url>
+cd pdta-navigator-demo
 
-**Use your preferred IDE**
+# Installa le dipendenze
+npm install
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Avvia il server di sviluppo
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+### Build per Produzione
+```bash
+npm run build
+```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 📋 Moduli Disponibili
 
-**Use GitHub Codespaces**
+### 1. Modulo Oncologico v1
+Sistema base per la gestione dei pazienti oncologici con funzionalità essenziali.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### 2. Modulo Oncologico v2
+Sistema avanzato con architettura modulare:
 
-## What technologies are used for this project?
+#### 👨‍⚕️ Profilo Oncologo/Radioterapista
+- **Richiesta Prenotazioni**: Form per richiedere esami e visite
+- **Notifiche**: Sistema di notifiche per esiti visite/esami e discussioni
+- **Gestione Richieste**: Visualizzazione e gestione delle richieste inviate
 
-This project is built with:
+#### 👩‍💼 Profilo Case Manager
+- **Lista Pazienti**: Visualizzazione pazienti ordinati per score clinico
+- **Gestione Prenotazioni**: Associazione slot CUP e gestione prenotazioni
+- **Verbali Visite**: Creazione e gestione verbali per oncologi/radioterapisti
+- **Visite Ambulatori**: Gestione calendario e blocchi slot
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+#### 🏥 Ambulatori Specialistici
+- **Cure Simultanee**: Gestione occupazione e pianificazione
+- **Oncogeriatria**: Specializzazione per pazienti anziani
+- **Osteoncologia**: Gestione patologie ossee oncologiche
 
-## How can I deploy this project?
+### 3. Modulo Paziente
+Interfaccia dedicata ai pazienti per:
+- Consultazione informazioni personali
+- Visualizzazione esami programmati
+- Compilazione questionari
+- Accesso a informazioni di supporto
 
-Simply open [Lovable](https://lovable.dev/projects/6147d512-1007-4a67-abb5-3f862bd563e6) and click on Share -> Publish.
+## 🛠️ Tecnologie Utilizzate
 
-## Can I connect a custom domain to my Lovable project?
+- **Frontend**: React 18 + TypeScript
+- **Build Tool**: Vite
+- **UI Library**: shadcn/ui + Tailwind CSS
+- **Routing**: React Router DOM
+- **Icons**: Lucide React
 
-Yes, you can!
+## 📁 Struttura del Progetto
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+```
+src/
+├── oncologico/           # Modulo Oncologico v1
+├── oncologico-v2/        # Modulo Oncologico v2
+│   ├── components/       # Componenti condivisi
+│   ├── pages/           # Pagine del modulo
+│   └── hooks/           # Custom hooks
+├── paziente/            # Modulo Paziente
+├── shared/              # Componenti e utilities condivise
+└── main.tsx            # Entry point dell'applicazione
+```
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+## 🎯 Funzionalità Principali
+
+### Sistema di Notifiche
+- Notifiche in tempo reale per oncologi/radioterapisti
+- Badge dinamici per notifiche non lette
+- Categorizzazione per tipo (esiti visite, discussioni, esami)
+
+### Gestione PDTA
+- 9 percorsi diagnostico-terapeutici predefiniti
+- Score clinico per priorizzazione pazienti
+- Integrazione con sistema CUP per prenotazioni
+
+### Ambulatori Specialistici
+- Gestione occupazione giornaliera e settimanale
+- Blocco slot per nuove visite
+- Export dati e reportistica
+- Verbali dettagliati delle visite
+
+### Sistema di Ricerca e Filtri
+- Ricerca pazienti per codice fiscale
+- Filtri per ambulatorio, PDTA, stato prenotazione
+- Navigazione temporale per calendari
+
+## 🔧 Configurazione
+
+### Variabili d'Ambiente
+Il progetto utilizza configurazioni di default per la demo. Per personalizzazioni, creare un file `.env.local`:
+
+```env
+VITE_APP_TITLE=PDTA Navigator Demo
+VITE_API_BASE_URL=http://localhost:3000/api
+```
+
+## 📊 Dati Demo
+
+Il sistema include dati mock completi per:
+- Pazienti con diverse patologie oncologiche
+- Visite e esami programmati
+- Notifiche e richieste
+- Calendari ambulatoriali
+- Verbali e report
+
+## 🤝 Contributi
+
+Per contribuire al progetto:
+1. Fork del repository
+2. Creazione di un branch per la feature
+3. Commit delle modifiche
+4. Push al branch
+5. Creazione di una Pull Request
+
+## 📄 Licenza
+
+Questo progetto è sviluppato per scopi dimostrativi e di ricerca.
+
+## 📞 Supporto
+
+Per domande o supporto tecnico, contattare il team di sviluppo.
+
+---
+
+**Versione**: 1.0.0  
+**Ultimo aggiornamento**: Gennaio 2024
