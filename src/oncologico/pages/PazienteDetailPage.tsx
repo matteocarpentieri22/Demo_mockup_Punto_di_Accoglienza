@@ -8,7 +8,7 @@ import { Label } from "@/shared/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { ArrowLeft, Download, Eye, Clock, CheckCircle, AlertCircle, User, Calendar, Plus, Save, Edit, FileText } from "lucide-react";
-import CaseManagerNavbar from "@/oncologico-v2/components/CaseManagerNavbar";
+import CaseManagerNavbar from "@/oncologico/components/CaseManagerNavbar";
 import { useNavigate, useParams } from "react-router-dom";
 
 // Lista dei 9 PDTA disponibili (stessa lista usata negli altri moduli)
@@ -61,6 +61,7 @@ const PazienteDetailPage = () => {
       pdta: "Polmone",
       visitaRichiesta: "Oncologica",
       medicoMittente: "Dr. Bianchi",
+      quesitoDiagnostico: "Valutazione per sospetta neoplasia polmonare con nodulo di 2.5 cm al lobo superiore destro. Richiesta stadiazione completa e valutazione per trattamento chirurgico.",
       score: 8,
       slotPrenotato: true,
       dataPrenotazione: "2024-01-20",
@@ -84,6 +85,7 @@ const PazienteDetailPage = () => {
       pdta: "Mammella",
       visitaRichiesta: "Radioterapia",
       medicoMittente: "Dr. Verdi",
+      quesitoDiagnostico: "Paziente con carcinoma mammario infiltrante T2N1M0. Richiesta valutazione per radioterapia adiuvante post-chirurgica e follow-up oncologico.",
       score: 7,
       slotPrenotato: false,
       dataPrenotazione: null,
@@ -105,6 +107,7 @@ const PazienteDetailPage = () => {
       pdta: "Prostata",
       visitaRichiesta: "Oncogeriatrica",
       medicoMittente: "Dr. Rossi",
+      quesitoDiagnostico: "Paziente anziano con carcinoma prostatico avanzato. Richiesta valutazione geriatrica per ottimizzazione del trattamento e gestione delle comorbidità.",
       score: 6,
       slotPrenotato: true,
       dataPrenotazione: "2024-01-18",
@@ -128,6 +131,7 @@ const PazienteDetailPage = () => {
       pdta: "Sistema nervoso centrale",
       visitaRichiesta: "Osteoncologica",
       medicoMittente: "Dr. Bianchi",
+      quesitoDiagnostico: "Paziente con metastasi ossee da carcinoma mammario. Richiesta valutazione per terapia sistemica e gestione del dolore osseo.",
       score: 5,
       slotPrenotato: false,
       dataPrenotazione: null,
@@ -149,6 +153,7 @@ const PazienteDetailPage = () => {
       pdta: "Colon",
       visitaRichiesta: "Visita",
       medicoMittente: "Dr. Verdi",
+      quesitoDiagnostico: "Paziente con carcinoma del colon-retto operato. Richiesta follow-up oncologico e valutazione per terapia adiuvante.",
       score: 4,
       slotPrenotato: true,
       dataPrenotazione: "2024-01-22",
@@ -170,6 +175,7 @@ const PazienteDetailPage = () => {
       pdta: "Melanoma",
       visitaRichiesta: "Discussione",
       medicoMittente: "Dr. Bianchi",
+      quesitoDiagnostico: "Paziente con melanoma cutaneo in stadio avanzato. Richiesta discussione multidisciplinare per strategia terapeutica personalizzata.",
       score: 3,
       slotPrenotato: false,
       dataPrenotazione: null,
@@ -335,6 +341,61 @@ const PazienteDetailPage = () => {
     return "bg-green-100 text-green-800";
   };
 
+  // Storico visite per ambulatori (mock demo)
+  type VisitaAmbulatorio = {
+    id: number;
+    ambulatorio: string;
+    tipo: string;
+    codiceRicetta: string;
+    dataRichiesta: string;
+    stato: "Disdetta" | "Completata" | "Prenotata" | "Da prenotare";
+    note?: string;
+  };
+
+  const getAmbulatorioVisits = (patientId: number): VisitaAmbulatorio[] => {
+    const visits: Record<number, VisitaAmbulatorio[]> = {
+      1: [
+        { id: 1, ambulatorio: "Cure Simultanee", tipo: "Prima visita", codiceRicetta: "0123456789", dataRichiesta: "2024-01-10", stato: "Completata", note: "Follow-up tra 3 mesi" },
+        { id: 2, ambulatorio: "Oncogeriatria", tipo: "Controllo", codiceRicetta: "9876543210", dataRichiesta: "2024-01-18", stato: "Prenotata", note: "Portare esami recenti" },
+        { id: 3, ambulatorio: "Osteoncologia", tipo: "Discussione", codiceRicetta: "2233445566", dataRichiesta: "2024-01-22", stato: "Da prenotare" }
+      ],
+      2: [
+        { id: 1, ambulatorio: "Oncogeriatria", tipo: "Radioterapia", codiceRicetta: "1111222233", dataRichiesta: "2024-01-12", stato: "Disdetta", note: "Riprogrammare" }
+      ],
+      3: [
+        { id: 1, ambulatorio: "Cure Simultanee", tipo: "Follow-up", codiceRicetta: "5566778899", dataRichiesta: "2024-01-08", stato: "Completata" }
+      ],
+      4: [
+        { id: 1, ambulatorio: "Osteoncologia", tipo: "Valutazione", codiceRicetta: "0099887766", dataRichiesta: "2024-01-14", stato: "Prenotata" }
+      ],
+      5: [
+        { id: 1, ambulatorio: "Osteoncologia", tipo: "Controllo", codiceRicetta: "3344556677", dataRichiesta: "2024-01-16", stato: "Completata" }
+      ],
+      6: [
+        { id: 1, ambulatorio: "Cure Simultanee", tipo: "Prima visita", codiceRicetta: "7788990011", dataRichiesta: "2024-01-18", stato: "Da prenotare", note: "In attesa di esito" }
+      ],
+      999: [
+        { id: 1, ambulatorio: "Cure Simultanee", tipo: "Prima visita", codiceRicetta: "1234567890", dataRichiesta: "2024-01-20", stato: "Completata" },
+        { id: 2, ambulatorio: "Oncogeriatria", tipo: "Controllo", codiceRicetta: "1357913579", dataRichiesta: "2024-01-25", stato: "Prenotata" },
+        { id: 3, ambulatorio: "Osteoncologia", tipo: "Discussione", codiceRicetta: "2468024680", dataRichiesta: "2024-01-28", stato: "Da prenotare", note: "Richiesta valutazione multidisciplinare" }
+      ]
+    };
+    return visits[patientId] || [];
+  };
+
+  const getStatoBadgeColor = (stato: VisitaAmbulatorio["stato"]) => {
+    switch (stato) {
+      case "Completata":
+        return "bg-green-100 text-green-800";
+      case "Prenotata":
+        return "bg-blue-100 text-blue-800";
+      case "Disdetta":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-yellow-100 text-yellow-800"; // Da prenotare
+    }
+  };
+
   const handleCupAssociation = () => {
     // Simula l'associazione CUP
     console.log("Associazione CUP:", cupData);
@@ -417,7 +478,7 @@ const PazienteDetailPage = () => {
           <div className="text-center py-8">
             <h1 className="text-2xl font-bold text-red-600 mb-4">Paziente Non Trovato</h1>
             <p className="text-muted-foreground mb-4">Il codice fiscale inserito non è valido.</p>
-            <Button onClick={() => navigate('/oncologico-v2/case-manager')}>
+            <Button onClick={() => navigate('/oncologico/case-manager')}>
               <ArrowLeft className="w-4 h-4 mr-2" />
               Torna alla Lista Pazienti
             </Button>
@@ -435,7 +496,7 @@ const PazienteDetailPage = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" onClick={() => navigate('/oncologico-v2/case-manager')}>
+            <Button variant="ghost" size="sm" onClick={() => navigate('/oncologico/case-manager')}>
               <ArrowLeft className="w-4 h-4 mr-2" />
               Torna alla Lista
             </Button>
@@ -483,6 +544,10 @@ const PazienteDetailPage = () => {
                   <div className="space-y-2 text-sm">
                     <p><strong>Visita Richiesta:</strong> {patient.visitaRichiesta}</p>
                     <p><strong>Medico Mittente:</strong> {patient.medicoMittente}</p>
+                    <p><strong>Quesito Diagnostico:</strong></p>
+                    <div className="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                      <p className="text-sm text-blue-800 italic">"{patient.quesitoDiagnostico}"</p>
+                    </div>
                     {patient.slotPrenotato ? (
                       <>
                         <p><strong>Stato:</strong> <Badge className="bg-green-100 text-green-800">Prenotato</Badge></p>
@@ -533,6 +598,19 @@ const PazienteDetailPage = () => {
                     >
                       <Edit className="w-4 h-4 mr-2" />
                       Modifica Prenotazione
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {
+                        if (confirm('Eliminare la prenotazione CUP per questo paziente?')) {
+                          alert('Prenotazione eliminata con successo');
+                          // In una app reale aggiorneremmo lo stato del paziente lato server
+                          // Demo: non persistiamo, solo feedback utente
+                        }
+                      }}
+                      className="flex-1 border-red-200 text-red-700 hover:bg-red-50"
+                    >
+                      Elimina Prenotazione
                     </Button>
                   </div>
                 </div>
@@ -801,107 +879,31 @@ const PazienteDetailPage = () => {
             </CardContent>
           </Card>
 
-          {/* Storico Visite */}
+          {/* Storico Visite per Ambulatori */}
           <Card>
             <CardHeader>
               <CardTitle>Storico Visite</CardTitle>
-              <CardDescription>Cronologia delle visite effettuate</CardDescription>
+              <CardDescription>Visite relative agli ambulatori con stato e note</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {patient.storicoVisite.map((visita, index) => (
-                  <div key={index} className="p-4 border rounded-lg">
-                    <div className="flex justify-between items-start mb-2">
-                      <span className="font-medium">{visita.tipo}</span>
-                      <span className="text-sm text-muted-foreground">{visita.data}</span>
-                    </div>
-                    <div className="text-sm text-muted-foreground mb-2">
-                      Medico: {visita.medico}
-                    </div>
-                    <div className="text-sm">
-                      <strong>Esito:</strong> {visita.esito}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Esiti Esami */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Esiti Esami</CardTitle>
-              <CardDescription>Risultati degli esami diagnostici</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {getExamResults(patient.id).map((esame) => (
-                  <div key={esame.id} className="p-4 border rounded-lg">
-                    <div className="flex justify-between items-start mb-2">
-                      <span className="font-medium">{esame.tipo}</span>
-                      <Badge variant={esame.stato === "Completato" ? "default" : "secondary"}>
-                        {esame.stato}
-                      </Badge>
-                    </div>
-                    <div className="text-sm text-muted-foreground mb-2">
-                      Data: {esame.data}
-                    </div>
-                    <div className="text-sm">
-                      <strong>Esito:</strong> {esame.esito}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Verbali Visite */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Verbali Visite</CardTitle>
-                  <CardDescription>Documenti completi delle visite</CardDescription>
-                </div>
-                <Button onClick={handleNuovoVerbale} className="bg-blue-600 hover:bg-blue-700">
-                  <FileText className="w-4 h-4 mr-2" />
-                  Nuovo Verbale
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {getVisitReports(patient.id).map((verbale) => (
-                  <div key={verbale.id} className="p-4 border rounded-lg">
-                    <div className="flex justify-between items-start mb-2">
+                {getAmbulatorioVisits(patient.id).map((v) => (
+                  <div key={v.id} className="p-4 border rounded-lg">
+                    <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                       <div className="flex items-center gap-2">
-                        <span className="font-medium">{verbale.tipo}</span>
-                        {verbale.stato && (
-                          <Badge variant="outline" className="text-xs">
-                            {verbale.stato}
-                          </Badge>
-                        )}
+                        <span className="font-medium">{v.tipo}</span>
+                        <Badge className={getStatoBadgeColor(v.stato)}>{v.stato}</Badge>
                       </div>
-                      <span className="text-sm text-muted-foreground">{verbale.data}</span>
+                      <span className="text-sm text-muted-foreground">{v.dataRichiesta}</span>
                     </div>
-                    <div className="text-sm text-muted-foreground mb-2">
-                      <div className="flex gap-4">
-                        <span><strong>Medico:</strong> {verbale.medico}</span>
-                        {verbale.ambulatorio && <span><strong>Ambulatorio:</strong> {verbale.ambulatorio}</span>}
-                        {verbale.ora && <span><strong>Ora:</strong> {verbale.ora}</span>}
-                      </div>
+                    <div className="grid md:grid-cols-3 gap-3 text-sm text-muted-foreground mb-1">
+                      <div><strong>Ambulatorio:</strong> {v.ambulatorio}</div>
+                      <div><strong>Codice Ricetta:</strong> {v.codiceRicetta}</div>
+                      <div><strong>Data richiesta:</strong> {v.dataRichiesta}</div>
                     </div>
-                    <div className="text-sm bg-muted p-3 rounded mb-2">
-                      <strong>Verbale:</strong> {verbale.verbale}
-                    </div>
-                    {verbale.note && (
-                      <div className="text-sm bg-blue-50 p-3 rounded border border-blue-200">
-                        <strong>Note per l'oncologo/radioterapista:</strong> {verbale.note}
-                      </div>
-                    )}
-                    {verbale.dataCreazione && (
-                      <div className="text-xs text-muted-foreground mt-2">
-                        Creato il: {verbale.dataCreazione}
+                    {v.note && (
+                      <div className="text-sm bg-muted p-3 rounded">
+                        <strong>Note:</strong> {v.note}
                       </div>
                     )}
                   </div>
@@ -909,6 +911,10 @@ const PazienteDetailPage = () => {
               </div>
             </CardContent>
           </Card>
+
+          {/* Sezione Esiti Esami rimossa in vista semplificata */}
+
+          {/* Verbali Visite rimossi in vista semplificata */}
 
         </div>
       </div>

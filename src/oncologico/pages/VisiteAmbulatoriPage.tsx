@@ -6,8 +6,8 @@ import { Label } from "@/shared/components/ui/label";
 import { Badge } from "@/shared/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/shared/components/ui/dialog";
-import { ArrowLeft, Calendar, Clock, CheckCircle, AlertCircle, Download, Filter, Plus, Lock, Unlock } from "lucide-react";
-import CaseManagerNavbar from "@/oncologico-v2/components/CaseManagerNavbar";
+import { ArrowLeft, Calendar, Clock, CheckCircle, AlertCircle, Download, Filter, Plus, Lock, Unlock, MessageSquare, Stethoscope } from "lucide-react";
+import CaseManagerNavbar from "@/oncologico/components/CaseManagerNavbar";
 import { useNavigate } from "react-router-dom";
 
 const VisiteAmbulatoriPage = () => {
@@ -83,6 +83,18 @@ const VisiteAmbulatoriPage = () => {
         return "bg-gray-50 border-gray-200";
       default:
         return "bg-yellow-50 border-yellow-200";
+    }
+  };
+
+  // Solo il colore del bordo (senza background) per evitare override sugli sfondi custom
+  const getStatusBorderOnly = (stato: string) => {
+    switch (stato) {
+      case "confermata":
+        return "border-green-200";
+      case "libero":
+        return "border-gray-200";
+      default:
+        return "border-yellow-200";
     }
   };
 
@@ -181,7 +193,7 @@ const VisiteAmbulatoriPage = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" onClick={() => navigate('/oncologico-v2/case-manager')}>
+            <Button variant="ghost" size="sm" onClick={() => navigate('/oncologico/case-manager')}>
               <ArrowLeft className="w-4 h-4 mr-2" />
               Indietro
             </Button>
@@ -362,51 +374,81 @@ const VisiteAmbulatoriPage = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {slots.map((slot, index) => (
-                    <div
-                      key={index}
-                      className={`p-3 rounded-lg border ${getStatusColor(slot.stato)}`}
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          {getStatusIcon(slot.stato)}
-                          <span className="font-medium">{slot.ora}</span>
+                {/* Separa Visite/Slot e Discussioni */}
+                {(() => {
+                  const visiteSlots = slots.filter(s => s.tipo !== 'Discussione');
+                  const discussioniSlots = slots.filter(s => s.tipo === 'Discussione');
+                  return (
+                    <div className="space-y-6">
+                      <div>
+                        <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2"><Stethoscope className="w-4 h-4 text-green-600" />Visite e Slot</h4>
+                        <div className="space-y-3">
+                          {visiteSlots.map((slot, index) => (
+                            <div key={`v-${index}`} className={`p-3 rounded-lg border ${getStatusColor(slot.stato)} bg-green-50 border-l-4 border-l-green-500`}>
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center gap-2">
+                                  {getStatusIcon(slot.stato)}
+                                  <span className="font-medium">{slot.ora}</span>
+                                </div>
+                                {slot.stato === 'libero' && (
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline"
+                                    onClick={() => {
+                                      setBlockSlotData({
+                                        ...blockSlotData,
+                                        ambulatorio: ambulatorio,
+                                        ora: slot.ora
+                                      });
+                                      setShowBlockSlotDialog(true);
+                                    }}
+                                  >
+                                    <Lock className="w-3 h-3 mr-1" />
+                                    Blocca
+                                  </Button>
+                                )}
+                              </div>
+                              {slot.paziente ? (
+                                <div className="space-y-1 text-sm">
+                                  <p><strong>Paziente:</strong> {slot.paziente}</p>
+                                  <p><strong>Tipo:</strong> {slot.tipo}</p>
+                                  <p><strong>Medico:</strong> {slot.medico}</p>
+                                  <p><strong>CF:</strong> <span className="font-mono text-xs">{slot.cf}</span></p>
+                                </div>
+                              ) : (
+                                <div className="text-sm text-muted-foreground">Slot disponibile per nuova prenotazione</div>
+                              )}
+                            </div>
+                          ))}
                         </div>
-                        {slot.stato === 'libero' && (
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => {
-                              setBlockSlotData({
-                                ...blockSlotData,
-                                ambulatorio: ambulatorio,
-                                ora: slot.ora
-                              });
-                              setShowBlockSlotDialog(true);
-                            }}
-                          >
-                            <Lock className="w-3 h-3 mr-1" />
-                            Blocca
-                          </Button>
-                        )}
                       </div>
-                      
-                      {slot.paziente ? (
-                        <div className="space-y-1 text-sm">
-                          <p><strong>Paziente:</strong> {slot.paziente}</p>
-                          <p><strong>Tipo:</strong> {slot.tipo}</p>
-                          <p><strong>Medico:</strong> {slot.medico}</p>
-                          <p><strong>CF:</strong> <span className="font-mono text-xs">{slot.cf}</span></p>
-                        </div>
-                      ) : (
-                        <div className="text-sm text-muted-foreground">
-                          Slot disponibile per nuova prenotazione
+
+                      {discussioniSlots.length > 0 && (
+                        <div>
+                          <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2"><MessageSquare className="w-4 h-4 text-blue-600" />Discussioni</h4>
+                          <div className="space-y-3">
+                            {discussioniSlots.map((slot, index) => (
+                              <div key={`d-${index}`} className={`p-3 rounded-lg border bg-blue-50 ${getStatusBorderOnly(slot.stato)} border-l-4 border-l-blue-500`}>
+                                <div className="flex items-center justify-between mb-2">
+                                  <div className="flex items-center gap-2">
+                                    {getStatusIcon(slot.stato)}
+                                    <Badge variant="outline" className="bg-blue-50 border-blue-200 text-blue-700">Discussione</Badge>
+                                  </div>
+                                </div>
+                                <div className="space-y-1 text-sm">
+                                  <p><strong>Paziente:</strong> {slot.paziente}</p>
+                                  <p><strong>Tipo:</strong> {slot.tipo}</p>
+                                  <p><strong>Medico:</strong> {slot.medico}</p>
+                                  <p><strong>CF:</strong> <span className="font-mono text-xs">{slot.cf}</span></p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       )}
                     </div>
-                  ))}
-                </div>
+                  );
+                })()}
               </CardContent>
             </Card>
           ))}

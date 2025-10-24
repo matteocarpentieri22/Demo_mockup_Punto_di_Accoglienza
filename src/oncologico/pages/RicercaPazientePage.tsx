@@ -5,7 +5,7 @@ import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { Badge } from "@/shared/components/ui/badge";
 import { ArrowLeft, Search, User, AlertCircle, CheckCircle } from "lucide-react";
-import CaseManagerNavbar from "@/oncologico-v2/components/CaseManagerNavbar";
+import CaseManagerNavbar from "@/oncologico/components/CaseManagerNavbar";
 import { useNavigate } from "react-router-dom";
 
 const RicercaPazientePage = () => {
@@ -206,7 +206,7 @@ const RicercaPazientePage = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" onClick={() => navigate('/oncologico-v2/case-manager')}>
+            <Button variant="ghost" size="sm" onClick={() => navigate('/oncologico/case-manager')}>
               <ArrowLeft className="w-4 h-4 mr-2" />
               Indietro
             </Button>
@@ -368,7 +368,7 @@ const RicercaPazientePage = () => {
 
               {/* Azioni */}
               <div className="mt-6 flex gap-2">
-                <Button onClick={() => navigate(`/oncologico-v2/paziente/${searchResult.cf}`)}>
+                <Button onClick={() => navigate(`/oncologico/paziente/${searchResult.cf}`)}>
                   <User className="w-4 h-4 mr-2" />
                   Visualizza Dettagli Completi
                 </Button>

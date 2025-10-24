@@ -7,9 +7,27 @@ import { Textarea } from "@/shared/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/shared/components/ui/radio-group";
 import { Badge } from "@/shared/components/ui/badge";
-import { User, FileText, Bell, Calculator, Send, Calendar } from "lucide-react";
-import OncologoNavbar from "@/oncologico-v2/components/OncologoNavbar";
+import { User, FileText, Bell, Calculator, Send, Calendar, Upload } from "lucide-react";
+import OncologoNavbar from "@/oncologico/components/OncologoNavbar";
 import { useNavigate } from "react-router-dom";
+
+type DemoPatient = { nome: string; cognome: string; dataNascita: string };
+
+const generateRandomPatient = (): DemoPatient => {
+  const nomi = ["Mario", "Luca", "Giulia", "Anna", "Francesca", "Paolo", "Sara", "Alessandro", "Chiara", "Davide"];
+  const cognomi = ["Rossi", "Bianchi", "Verdi", "Esposito", "Ferrari", "Russo", "Gallo", "Costa", "Fontana", "Greco"];
+  const randomFrom = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
+  const randomDate = () => {
+    const start = new Date(1940, 0, 1).getTime();
+    const end = new Date(2010, 11, 31).getTime();
+    const d = new Date(start + Math.random() * (end - start));
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const yyyy = d.getFullYear();
+    return `${dd}/${mm}/${yyyy}`;
+  };
+  return { nome: randomFrom(nomi), cognome: randomFrom(cognomi), dataNascita: randomDate() };
+};
 
 // Lista dei 9 PDTA disponibili (stessa lista usata negli altri moduli)
 const PDTA_LIST = [
@@ -31,13 +49,14 @@ const OncologoPage = () => {
     pdta: "",
     quesitoDiagnostico: "",
     ambulatorio: "",
-    codiceRicetta: "",
     score: {
       tosse: "",
       dolore: "",
       comorbidita: ""
     }
   });
+  const [impegnativaPDF, setImpegnativaPDF] = useState<File | null>(null);
+  const [demoPatient, setDemoPatient] = useState<DemoPatient | null>(null);
 
   const [notifications, setNotifications] = useState([
     {
@@ -99,6 +118,15 @@ const OncologoPage = () => {
     return tosse + dolore + comorbidita;
   };
 
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && file.type === 'application/pdf') {
+      setImpegnativaPDF(file);
+    } else {
+      alert("Per favore seleziona un file PDF valido");
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const totalScore = calculateScore();
@@ -106,6 +134,15 @@ const OncologoPage = () => {
     // Qui andrebbe la logica per inviare la richiesta
     alert(`Richiesta inviata con successo! Score totale: ${totalScore}`);
   };
+
+  useEffect(() => {
+    const cf = formData.codiceFiscale.trim();
+    if (cf.length === 16) {
+      setDemoPatient(generateRandomPatient());
+    } else {
+      setDemoPatient(null);
+    }
+  }, [formData.codiceFiscale]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -149,14 +186,32 @@ const OncologoPage = () => {
                           className="h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                           required
                         />
+                        {demoPatient && (
+                          <div className="p-4 rounded-lg border border-blue-200 bg-blue-50/50">
+                            <div className="grid sm:grid-cols-3 gap-3 text-sm">
+                              <div>
+                                <div className="text-gray-500">Nome</div>
+                                <div className="font-semibold text-gray-800">{demoPatient.nome}</div>
+                              </div>
+                              <div>
+                                <div className="text-gray-500">Cognome</div>
+                                <div className="font-semibold text-gray-800">{demoPatient.cognome}</div>
+                              </div>
+                              <div>
+                                <div className="text-gray-500">Data di nascita</div>
+                                <div className="font-semibold text-gray-800">{demoPatient.dataNascita}</div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
                       <div className="space-y-3">
                         <Label htmlFor="pdta" className="text-sm font-medium text-gray-700">
-                          PDTA di Riferimento *
+                          Patologia di Riferimento *
                         </Label>
                         <Select value={formData.pdta} onValueChange={(value) => setFormData({...formData, pdta: value})}>
                           <SelectTrigger className="h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500">
-                            <SelectValue placeholder="Seleziona PDTA" />
+                            <SelectValue placeholder="Seleziona Patologia" />
                           </SelectTrigger>
                           <SelectContent>
                             {PDTA_LIST.map((pdta) => (
@@ -207,17 +262,38 @@ const OncologoPage = () => {
                         </Select>
                       </div>
                       <div className="space-y-3">
-                        <Label htmlFor="codiceRicetta" className="text-sm font-medium text-gray-700">
-                          Codice Ricetta / Impegnativa
+                        <Label htmlFor="impegnativa-pdf" className="text-sm font-medium text-gray-700">
+                          Allegare PDF Impegnativa
                         </Label>
-                        <Input
-                          id="codiceRicetta"
-                          placeholder="123456789"
-                          value={formData.codiceRicetta}
-                          onChange={(e) => setFormData({...formData, codiceRicetta: e.target.value})}
-                          className="h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                          required
-                        />
+                        <div className="space-y-2">
+                          <input
+                            type="file"
+                            id="impegnativa-pdf"
+                            accept=".pdf"
+                            onChange={handleFileUpload}
+                            className="hidden"
+                          />
+                          <div className="flex items-center gap-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => document.getElementById('impegnativa-pdf')?.click()}
+                              className="flex items-center gap-2 h-11 border-gray-300 hover:border-blue-500 hover:ring-blue-500"
+                            >
+                              <Upload className="w-4 h-4" />
+                              Seleziona PDF
+                            </Button>
+                            {impegnativaPDF && (
+                              <span className="text-sm text-green-600 flex items-center gap-1">
+                                <FileText className="w-4 h-4" />
+                                {impegnativaPDF.name}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-gray-500">
+                            Seleziona il file PDF dell'impegnativa del paziente
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -406,7 +482,7 @@ const OncologoPage = () => {
                 <Button 
                   variant="outline" 
                   className="w-full mt-4"
-                  onClick={() => navigate('/oncologico-v2/oncologo/notifiche')}
+                  onClick={() => navigate('/oncologico/oncologo/notifiche')}
                 >
                   Visualizza Tutte le Notifiche
                 </Button>

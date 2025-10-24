@@ -7,7 +7,7 @@ import { Label } from "@/shared/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/shared/components/ui/table";
 import { ArrowLeft, Search, Filter, FileText, Clock, CheckCircle, AlertCircle, Download, Eye, User, Calendar, Calculator } from "lucide-react";
-import OncologoNavbar from "@/oncologico-v2/components/OncologoNavbar";
+import OncologoNavbar from "@/oncologico/components/OncologoNavbar";
 import { useNavigate } from "react-router-dom";
 
 // Lista dei 9 PDTA disponibili
@@ -28,6 +28,11 @@ const RichiestePage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStato, setFilterStato] = useState("tutti");
   const [filterPDTA, setFilterPDTA] = useState("tutti");
+  const [selectedDate, setSelectedDate] = useState(() => {
+    // Data di default: oggi
+    const today = new Date();
+    return today.toISOString().split('T')[0]; // formato YYYY-MM-DD
+  });
 
   // Mock data richieste
   const [richieste] = useState([
@@ -44,7 +49,8 @@ const RichiestePage = () => {
       oraRichiesta: "14:30",
       stato: "in_attesa",
       medico: "Dr. Carlo Bianchi",
-      codiceRicetta: "123456789"
+      codiceRicetta: "123456789",
+      impegnativaPDF: "impegnativa_mario_rossi.pdf"
     },
     {
       id: 2,
@@ -59,7 +65,8 @@ const RichiestePage = () => {
       oraRichiesta: "16:45",
       stato: "approvata",
       medico: "Dr. Carlo Bianchi",
-      codiceRicetta: "987654321"
+      codiceRicetta: "987654321",
+      impegnativaPDF: "impegnativa_anna_bianchi.pdf"
     },
     {
       id: 3,
@@ -74,7 +81,8 @@ const RichiestePage = () => {
       oraRichiesta: "11:20",
       stato: "in_attesa",
       medico: "Dr. Carlo Bianchi",
-      codiceRicetta: "456789123"
+      codiceRicetta: "456789123",
+      impegnativaPDF: "impegnativa_giuseppe_verdi.pdf"
     },
     {
       id: 4,
@@ -89,7 +97,8 @@ const RichiestePage = () => {
       oraRichiesta: "09:15",
       stato: "rifiutata",
       medico: "Dr. Carlo Bianchi",
-      codiceRicetta: "789123456"
+      codiceRicetta: "789123456",
+      impegnativaPDF: "impegnativa_francesca_neri.pdf"
     },
     {
       id: 5,
@@ -104,12 +113,157 @@ const RichiestePage = () => {
       oraRichiesta: "15:30",
       stato: "approvata",
       medico: "Dr. Carlo Bianchi",
-      codiceRicetta: "321654987"
+      codiceRicetta: "321654987",
+      impegnativaPDF: "impegnativa_luigi_ferrari.pdf"
+    },
+    {
+      id: 6,
+      cf: "RSSGLI85A41H501U",
+      paziente: "Giulia Rossi",
+      pdta: "Mammella",
+      ambulatorio: "Cure Simultanee",
+      quesito: "Valutazione per carcinoma mammario",
+      score: 6,
+      scoreDetails: { tosse: 2, dolore: 2, comorbidita: 2 },
+      dataRichiesta: new Date().toISOString().split('T')[0], // oggi
+      oraRichiesta: "10:15",
+      stato: "in_attesa",
+      medico: "Dr. Carlo Bianchi",
+      codiceRicetta: "111222333",
+      impegnativaPDF: "impegnativa_giulia_rossi.pdf"
+    },
+    {
+      id: 7,
+      cf: "BNCMRC79B12H224W",
+      paziente: "Marco Bianchi",
+      pdta: "Prostata",
+      ambulatorio: "Oncogeriatria",
+      quesito: "Discussione caso carcinoma prostatico",
+      score: 5,
+      scoreDetails: { tosse: 1, dolore: 2, comorbidita: 2 },
+      dataRichiesta: new Date().toISOString().split('T')[0], // oggi
+      oraRichiesta: "16:45",
+      stato: "approvata",
+      medico: "Dr. Carlo Bianchi",
+      codiceRicetta: "444555666",
+      impegnativaPDF: "impegnativa_marco_bianchi.pdf"
+    },
+    {
+      id: 8,
+      cf: "VRDSRA92C60H224Z",
+      paziente: "Sara Verdi",
+      pdta: "Melanoma",
+      ambulatorio: "Osteoncologia",
+      quesito: "Valutazione lesione cutanea sospetta",
+      score: 7,
+      scoreDetails: { tosse: 2, dolore: 3, comorbidita: 2 },
+      dataRichiesta: new Date().toISOString().split('T')[0], // oggi
+      oraRichiesta: "09:30",
+      stato: "in_attesa",
+      medico: "Dr. Carlo Bianchi",
+      codiceRicetta: "777888999",
+      impegnativaPDF: "impegnativa_sara_verdi.pdf"
+    },
+    {
+      id: 9,
+      cf: "ESPFNC88D15H224A",
+      paziente: "Francesca Esposito",
+      pdta: "Sistema nervoso centrale",
+      ambulatorio: "Cure Simultanee",
+      quesito: "Valutazione per metastasi cerebrali",
+      score: 9,
+      scoreDetails: { tosse: 3, dolore: 3, comorbidita: 3 },
+      dataRichiesta: new Date().toISOString().split('T')[0], // oggi
+      oraRichiesta: "14:20",
+      stato: "rifiutata",
+      medico: "Dr. Carlo Bianchi",
+      codiceRicetta: "000111222",
+      impegnativaPDF: "impegnativa_francesca_esposito.pdf"
+    },
+    {
+      id: 10,
+      cf: "FRRLGI65E05H501Y",
+      paziente: "Luigi Ferrari",
+      pdta: "Colon",
+      ambulatorio: "Oncogeriatria",
+      quesito: "Follow-up post-chemioterapia",
+      score: 4,
+      scoreDetails: { tosse: 1, dolore: 1, comorbidita: 2 },
+      dataRichiesta: new Date().toISOString().split('T')[0], // oggi
+      oraRichiesta: "11:45",
+      stato: "approvata",
+      medico: "Dr. Carlo Bianchi",
+      codiceRicetta: "333444555",
+      impegnativaPDF: "impegnativa_luigi_ferrari_oggi.pdf"
+    },
+    {
+      id: 11,
+      cf: "GLLCHR90F25H224B",
+      paziente: "Chiara Gallo",
+      pdta: "Mammella",
+      ambulatorio: "Osteoncologia",
+      quesito: "Valutazione per carcinoma mammario triplo negativo",
+      score: 8,
+      scoreDetails: { tosse: 3, dolore: 3, comorbidita: 2 },
+      dataRichiesta: new Date().toISOString().split('T')[0], // oggi
+      oraRichiesta: "13:15",
+      stato: "in_attesa",
+      medico: "Dr. Carlo Bianchi",
+      codiceRicetta: "666777888",
+      impegnativaPDF: "impegnativa_chiara_gallo.pdf"
+    },
+    {
+      id: 12,
+      cf: "CSTDVE85G30H224C",
+      paziente: "Davide Costa",
+      pdta: "Sarcomi dei tessuti molli",
+      ambulatorio: "Cure Simultanee",
+      quesito: "Valutazione per sarcoma dei tessuti molli",
+      score: 6,
+      scoreDetails: { tosse: 2, dolore: 2, comorbidita: 2 },
+      dataRichiesta: new Date().toISOString().split('T')[0], // oggi
+      oraRichiesta: "15:30",
+      stato: "approvata",
+      medico: "Dr. Carlo Bianchi",
+      codiceRicetta: "999000111",
+      impegnativaPDF: "impegnativa_davide_costa.pdf"
+    },
+    {
+      id: 13,
+      cf: "FNTALX78H12H224D",
+      paziente: "Alessandro Fontana",
+      pdta: "Polmone",
+      ambulatorio: "Oncogeriatria",
+      quesito: "Valutazione per carcinoma polmonare a piccole cellule",
+      score: 7,
+      scoreDetails: { tosse: 3, dolore: 2, comorbidita: 2 },
+      dataRichiesta: new Date().toISOString().split('T')[0], // oggi
+      oraRichiesta: "08:45",
+      stato: "rifiutata",
+      medico: "Dr. Carlo Bianchi",
+      codiceRicetta: "222333444",
+      impegnativaPDF: "impegnativa_alessandro_fontana.pdf"
+    },
+    {
+      id: 14,
+      cf: "GRCMRT82I18H224E",
+      paziente: "Martina Greco",
+      pdta: "Retto",
+      ambulatorio: "Osteoncologia",
+      quesito: "Valutazione per carcinoma del retto",
+      score: 5,
+      scoreDetails: { tosse: 1, dolore: 2, comorbidita: 2 },
+      dataRichiesta: new Date().toISOString().split('T')[0], // oggi
+      oraRichiesta: "12:00",
+      stato: "in_attesa",
+      medico: "Dr. Carlo Bianchi",
+      codiceRicetta: "555666777",
+      impegnativaPDF: "impegnativa_martina_greco.pdf"
     }
   ]);
 
   const handleViewDetails = (richiesta: any) => {
-    navigate(`/oncologico-v2/oncologo/richieste/${richiesta.id}`);
+    navigate(`/oncologico/oncologo/richieste/${richiesta.id}`);
   };
 
   // Logica di filtraggio
@@ -125,7 +279,9 @@ const RichiestePage = () => {
     const matchesPDTA = filterPDTA === "tutti" ||
       richiesta.pdta === filterPDTA;
 
-    return matchesSearch && matchesStato && matchesPDTA;
+    const matchesDate = richiesta.dataRichiesta === selectedDate;
+
+    return matchesSearch && matchesStato && matchesPDTA && matchesDate;
   });
 
   const getStatoColor = (stato: string) => {
@@ -191,13 +347,15 @@ const RichiestePage = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" onClick={() => navigate('/oncologico-v2/oncologo')}>
+            <Button variant="ghost" size="sm" onClick={() => navigate('/oncologico/oncologo')}>
               <ArrowLeft className="w-4 h-4 mr-2" />
               Indietro
             </Button>
             <div>
               <h1 className="text-2xl font-bold">Richieste Prenotazione</h1>
-              <p className="text-muted-foreground">Gestione richieste di prenotazione esami e visite</p>
+              <p className="text-muted-foreground">
+                Gestione richieste di prenotazione esami e visite - {new Date(selectedDate).toLocaleDateString('it-IT')}
+              </p>
             </div>
           </div>
           <Button onClick={handleExportData}>
@@ -252,6 +410,18 @@ const RichiestePage = () => {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+
+              {/* Filtro Data */}
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-gray-500" />
+                <Label className="text-sm font-medium">Data:</Label>
+                <Input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="w-40"
+                />
               </div>
             </div>
           </CardContent>

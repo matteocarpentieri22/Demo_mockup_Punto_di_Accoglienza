@@ -4,10 +4,10 @@ import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Badge } from "@/shared/components/ui/badge";
 import { ArrowLeft, Search, Eye, Calendar, User } from "lucide-react";
-import { OncologicoNavbar } from "@/oncologico/components/OncologicoNavbar";
+import CaseManagerNavbar from "@/oncologico/components/CaseManagerNavbar";
 import { useNavigate } from "react-router-dom";
 
-// Mock data per i pazienti
+// Mock data per i pazienti (identico alla v1)
 const mockPatients = [
   {
     id: 1,
@@ -90,7 +90,7 @@ const getStatusBadge = (stato: string) => {
   }
 };
 
-const PazientiList = () => {
+const ElencoPazientiPage = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredPatients, setFilteredPatients] = useState(mockPatients);
@@ -111,12 +111,12 @@ const PazientiList = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <OncologicoNavbar />
+      <CaseManagerNavbar />
 
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 lg:py-8">
         {/* Back Button */}
         <div className="mb-4 sm:mb-6">
-          <Button variant="ghost" size="sm" onClick={() => navigate('/oncologico')} className="text-sm sm:text-base">
+          <Button variant="ghost" size="sm" onClick={() => navigate('/oncologico/case-manager')} className="text-sm sm:text-base">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Indietro
           </Button>
@@ -199,5 +199,4 @@ const PazientiList = () => {
   );
 };
 
-export default PazientiList;
-
+export default ElencoPazientiPage;

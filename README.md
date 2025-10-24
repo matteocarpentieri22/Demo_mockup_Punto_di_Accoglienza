@@ -6,8 +6,7 @@ Sistema demo per la gestione dei Percorsi Diagnostico Terapeutici Assistenziali 
 
 Il PDTA Navigator è una piattaforma web che supporta la gestione integrata dei pazienti oncologici attraverso diversi moduli specializzati:
 
-- **Modulo Oncologico v1**: Sistema base per la gestione dei pazienti oncologici
-- **Modulo Oncologico v2**: Sistema avanzato con profili separati per oncologi/radioterapisti e case manager
+- **Modulo Oncologico**: Sistema avanzato con profili separati per oncologi/radioterapisti e case manager
 - **Modulo Paziente**: Interfaccia dedicata ai pazienti per consultare informazioni e questionari
 
 ## 🚀 Avvio Rapido
@@ -36,10 +35,7 @@ npm run build
 
 ## 📋 Moduli Disponibili
 
-### 1. Modulo Oncologico v1
-Sistema base per la gestione dei pazienti oncologici con funzionalità essenziali.
-
-### 2. Modulo Oncologico v2
+### 1. Modulo Oncologico
 Sistema avanzato con architettura modulare:
 
 #### 👨‍⚕️ Profilo Oncologo/Radioterapista
@@ -58,7 +54,7 @@ Sistema avanzato con architettura modulare:
 - **Oncogeriatria**: Specializzazione per pazienti anziani
 - **Osteoncologia**: Gestione patologie ossee oncologiche
 
-### 3. Modulo Paziente
+### 2. Modulo Paziente
 Interfaccia dedicata ai pazienti per:
 - Consultazione informazioni personali
 - Visualizzazione esami programmati
@@ -77,8 +73,7 @@ Interfaccia dedicata ai pazienti per:
 
 ```
 src/
-├── oncologico/           # Modulo Oncologico v1
-├── oncologico-v2/        # Modulo Oncologico v2
+├── oncologico/        # Modulo Oncologico
 │   ├── components/       # Componenti condivisi
 │   ├── pages/           # Pagine del modulo
 │   └── hooks/           # Custom hooks

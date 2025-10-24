@@ -1,9 +1,9 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
-import { User, Home, Calendar, Users, FileText, Stethoscope, LogOut } from "lucide-react";
+import { User, Home, Calendar, Users, FileText, Heart, LogOut } from "lucide-react";
 
-const OsteoncologiaNavbar = () => {
+const OncogeriatriaNavbar = () => {
   const location = useLocation();
 
   const isActive = (path: string) => {
@@ -11,8 +11,8 @@ const OsteoncologiaNavbar = () => {
   };
 
   const handleLogout = () => {
-    if (confirm("Sei sicuro di voler uscire dall'ambulatorio Osteoncologia?")) {
-      window.location.href = '/oncologico-v2';
+    if (confirm("Sei sicuro di voler uscire dall'ambulatorio Oncogeriatria?")) {
+      window.location.href = '/oncologico';
     }
   };
 
@@ -21,12 +21,12 @@ const OsteoncologiaNavbar = () => {
       <div className="container mx-auto flex items-center justify-between">
         {/* Logo e titolo */}
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
-            <Stethoscope className="w-5 h-5 text-white" />
+          <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
+            <Heart className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-gray-900">Osteoncologia</h1>
-            <Badge variant="secondary" className="text-xs bg-purple-100 text-purple-800">
+            <h1 className="text-lg font-bold text-gray-900">Oncogeriatria</h1>
+            <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
               Ambulatorio Oncologico
             </Badge>
           </div>
@@ -34,9 +34,9 @@ const OsteoncologiaNavbar = () => {
 
         {/* Navigazione */}
         <div className="flex items-center gap-1">
-          <Link to="/oncologico-v2/ambulatori/osteoncologia">
+          <Link to="/oncologico/ambulatori/oncogeriatria">
             <Button 
-              variant={isActive("/oncologico-v2/ambulatori/osteoncologia") ? "default" : "ghost"}
+              variant={isActive("/oncologico/ambulatori/oncogeriatria") ? "default" : "ghost"}
               size="sm"
               className="flex items-center gap-2"
             >
@@ -45,9 +45,9 @@ const OsteoncologiaNavbar = () => {
             </Button>
           </Link>
           
-          <Link to="/oncologico-v2/ambulatori/osteoncologia/pianificazione">
+          <Link to="/oncologico/ambulatori/oncogeriatria/pianificazione">
             <Button 
-              variant={isActive("/oncologico-v2/ambulatori/osteoncologia/pianificazione") ? "default" : "ghost"}
+              variant={isActive("/oncologico/ambulatori/oncogeriatria/pianificazione") ? "default" : "ghost"}
               size="sm"
               className="flex items-center gap-2"
             >
@@ -56,9 +56,9 @@ const OsteoncologiaNavbar = () => {
             </Button>
           </Link>
           
-          <Link to="/oncologico-v2/ambulatori/osteoncologia/verbali">
+          <Link to="/oncologico/ambulatori/oncogeriatria/verbali">
             <Button 
-              variant={isActive("/oncologico-v2/ambulatori/osteoncologia/verbali") ? "default" : "ghost"}
+              variant={isActive("/oncologico/ambulatori/oncogeriatria/verbali") ? "default" : "ghost"}
               size="sm"
               className="flex items-center gap-2"
             >
@@ -71,11 +71,11 @@ const OsteoncologiaNavbar = () => {
         {/* Profilo utente */}
         <div className="flex items-center gap-3">
           <div className="text-right">
-            <p className="text-sm font-medium text-gray-900">Dr. Giuseppe Verdi</p>
-            <p className="text-xs text-gray-500">Osteoncologo</p>
+            <p className="text-sm font-medium text-gray-900">Dr. Maria Rossi</p>
+            <p className="text-xs text-gray-500">Oncogeriatra</p>
           </div>
-          <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-            <User className="w-4 h-4 text-purple-600" />
+          <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+            <User className="w-4 h-4 text-green-600" />
           </div>
           <Button
             variant="ghost"
@@ -91,4 +91,4 @@ const OsteoncologiaNavbar = () => {
   );
 };
 
-export default OsteoncologiaNavbar;
+export default OncogeriatriaNavbar;

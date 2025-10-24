@@ -3,7 +3,7 @@ import { Button } from "@/shared/components/ui/button";
 import { ArrowLeft, User, ClipboardList, Calendar, Bell, FileText, Building2, Heart, Stethoscope } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-const OncologicoV2Home = () => {
+const OncologicoHome = () => {
   const navigate = useNavigate();
 
   return (
@@ -16,7 +16,7 @@ const OncologicoV2Home = () => {
               <User className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-gray-900">Sistema Oncologico V2</h1>
+              <h1 className="text-lg font-bold text-gray-900">Sistema Oncologico</h1>
               <p className="text-xs text-gray-500">Seleziona il tuo profilo</p>
             </div>
           </div>
@@ -37,7 +37,7 @@ const OncologicoV2Home = () => {
         {/* Profili disponibili */}
         <div className="grid md:grid-cols-2 gap-6 mb-8">
           {/* Profilo Oncologo/Radioterapista */}
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/oncologico-v2/oncologo')}>
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/oncologico/oncologo')}>
             <CardHeader>
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
@@ -64,14 +64,14 @@ const OncologicoV2Home = () => {
                   <span>Valutazione score clinico</span>
                 </div>
               </div>
-              <Button className="w-full mt-4" onClick={() => navigate('/oncologico-v2/oncologo')}>
+              <Button className="w-full mt-4" onClick={() => navigate('/oncologico/oncologo')}>
                 Accedi al Profilo Oncologo
               </Button>
             </CardContent>
           </Card>
 
           {/* Profilo Case Manager */}
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/oncologico-v2/case-manager')}>
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/oncologico/case-manager')}>
             <CardHeader>
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
@@ -98,7 +98,7 @@ const OncologicoV2Home = () => {
                   <span>Prenotazioni CUP e gestione slot</span>
                 </div>
               </div>
-              <Button className="w-full mt-4" onClick={() => navigate('/oncologico-v2/case-manager')}>
+              <Button className="w-full mt-4" onClick={() => navigate('/oncologico/case-manager')}>
                 Accedi al Profilo Case Manager
               </Button>
             </CardContent>
@@ -114,7 +114,7 @@ const OncologicoV2Home = () => {
           
           <div className="grid md:grid-cols-3 gap-4">
             {/* Cure Simultanee */}
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/oncologico-v2/ambulatori/cure-simultanee')}>
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/oncologico/ambulatori/cure-simultanee')}>
               <CardHeader className="pb-3">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
@@ -148,7 +148,7 @@ const OncologicoV2Home = () => {
             </Card>
 
             {/* Oncogeriatria */}
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/oncologico-v2/ambulatori/oncogeriatria')}>
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/oncologico/ambulatori/oncogeriatria')}>
               <CardHeader className="pb-3">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
@@ -182,7 +182,7 @@ const OncologicoV2Home = () => {
             </Card>
 
             {/* Osteoncologia */}
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/oncologico-v2/ambulatori/osteoncologia')}>
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/oncologico/ambulatori/osteoncologia')}>
               <CardHeader className="pb-3">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
@@ -221,4 +221,4 @@ const OncologicoV2Home = () => {
   );
 };
 
-export default OncologicoV2Home;
+export default OncologicoHome;

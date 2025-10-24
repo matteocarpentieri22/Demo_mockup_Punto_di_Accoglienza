@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/sha
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
 import { ArrowLeft, Download, Eye, Clock, CheckCircle, AlertCircle, User } from "lucide-react";
-import OncologoNavbar from "@/oncologico-v2/components/OncologoNavbar";
+import OncologoNavbar from "@/oncologico/components/OncologoNavbar";
 import { useNavigate, useParams } from "react-router-dom";
 
 // Lista dei 9 PDTA disponibili (stessa lista usata negli altri moduli)
@@ -157,74 +157,9 @@ const PazienteDetailOncologo = () => {
     }
   ]);
 
-  // Mock data per esiti esami e verbali
-  const getExamResults = (patientId: number) => {
-    const examResults = {
-      1: [ // Mario Rossi
-        { id: 1, tipo: "TC Torace", data: "2024-01-12", esito: "Lesione polmonare destra confermata", stato: "Completato" },
-        { id: 2, tipo: "Biopsia", data: "2024-01-14", esito: "Adenocarcinoma polmonare", stato: "Completato" },
-        { id: 3, tipo: "PET-CT", data: "2024-01-20", esito: "In corso", stato: "Programmato" }
-      ],
-      2: [ // Anna Bianchi
-        { id: 1, tipo: "Mammografia", data: "2024-01-10", esito: "Lesione sospetta confermata", stato: "Completato" },
-        { id: 2, tipo: "Biopsia mammaria", data: "2024-01-12", esito: "Carcinoma duttale invasivo", stato: "Completato" },
-        { id: 3, tipo: "RM Mammella", data: "2024-01-25", esito: "In corso", stato: "Programmato" }
-      ],
-      3: [ // Giuseppe Verdi
-        { id: 1, tipo: "PSA", data: "2024-01-08", esito: "Valore elevato (8.5 ng/ml)", stato: "Completato" },
-        { id: 2, tipo: "Biopsia prostatica", data: "2024-01-15", esito: "In corso", stato: "Programmato" }
-      ],
-      4: [ // Francesca Neri
-        { id: 1, tipo: "RM Encefalo", data: "2024-01-14", esito: "Lesione cerebrale sospetta", stato: "Completato" },
-        { id: 2, tipo: "Biopsia cerebrale", data: "2024-01-22", esito: "In corso", stato: "Programmato" }
-      ],
-      5: [ // Luigi Ferrari
-        { id: 1, tipo: "Colonscopia", data: "2024-01-16", esito: "Polipo maligno confermato", stato: "Completato" },
-        { id: 2, tipo: "TC Addome", data: "2024-01-20", esito: "In corso", stato: "Programmato" }
-      ],
-      6: [ // Maria Romano
-        { id: 1, tipo: "Dermoscopia", data: "2024-01-18", esito: "Melanoma sospetto", stato: "Completato" },
-        { id: 2, tipo: "Biopsia cutanea", data: "2024-01-25", esito: "In corso", stato: "Programmato" }
-      ],
-      999: [ // Paziente Demo
-        { id: 1, tipo: "TC Torace", data: "2024-01-18", esito: "Lesione polmonare sospetta", stato: "Completato" },
-        { id: 2, tipo: "Biopsia", data: "2024-01-22", esito: "In corso", stato: "Programmato" },
-        { id: 3, tipo: "Esami ematochimici", data: "2024-01-20", esito: "Valori nella norma", stato: "Completato" }
-      ]
-    };
-    return examResults[patientId as keyof typeof examResults] || [];
-  };
+  // Sezione esiti esami rimossa per profilo oncologo
 
-  // Mock data per verbali visite
-  const getVisitReports = (patientId: number) => {
-    const visitReports = {
-      1: [ // Mario Rossi
-        { id: 1, data: "2024-01-10", tipo: "Prima visita oncologica", medico: "Dr. Bianchi", verbale: "Paziente presenta tosse persistente e dolore toracico. Programmati esami di stadiazione." },
-        { id: 2, data: "2023-12-15", tipo: "Visita controllo", medico: "Dr. Verdi", verbale: "Paziente stabile, continuare follow-up trimestrale." }
-      ],
-      2: [ // Anna Bianchi
-        { id: 1, data: "2024-01-12", tipo: "Visita oncologica", medico: "Dr. Verdi", verbale: "Diagnosi di carcinoma mammario confermata. Programmata valutazione per radioterapia." }
-      ],
-      3: [ // Giuseppe Verdi
-        { id: 1, data: "2024-01-08", tipo: "Visita geriatrica", medico: "Dr. Rossi", verbale: "Paziente anziano con multiple comorbidità. Valutazione oncologica in corso." },
-        { id: 2, data: "2023-11-20", tipo: "Prima visita", medico: "Dr. Bianchi", verbale: "Sospetto carcinoma prostatico. Richiesti esami diagnostici." }
-      ],
-      4: [ // Francesca Neri
-        { id: 1, data: "2024-01-14", tipo: "Visita neurologica", medico: "Dr. Bianchi", verbale: "Paziente con storia di epilessia presenta nuovi sintomi neurologici. Richiesta RM encefalo." }
-      ],
-      5: [ // Luigi Ferrari
-        { id: 1, data: "2024-01-16", tipo: "Visita gastroenterologica", medico: "Dr. Verdi", verbale: "Follow-up post-intervento. Controllo programmato." }
-      ],
-      6: [ // Maria Romano
-        { id: 1, data: "2024-01-18", tipo: "Visita dermatologica", medico: "Dr. Bianchi", verbale: "Lesione cutanea sospetta. Richiesta biopsia per conferma diagnostica." }
-      ],
-      999: [ // Paziente Demo
-        { id: 1, data: "2024-01-20", tipo: "Prima visita oncologica", medico: "Dr. Bianchi", verbale: "Paziente presenta sintomi respiratori. Programmati esami diagnostici per valutazione." },
-        { id: 2, data: "2024-01-15", tipo: "Visita controllo", medico: "Dr. Verdi", verbale: "Follow-up post-diagnosi. Paziente collaborativo e motivato al trattamento." }
-      ]
-    };
-    return visitReports[patientId as keyof typeof visitReports] || [];
-  };
+  // Sezione verbali rimossa per profilo oncologo
 
   // Trova il paziente o genera uno demo
   const findPatient = () => {
@@ -269,6 +204,61 @@ const PazienteDetailOncologo = () => {
     return "bg-green-100 text-green-800";
   };
 
+  // Storico visite per ambulatori (mock demo)
+  type VisitaAmbulatorio = {
+    id: number;
+    ambulatorio: string;
+    tipo: string;
+    codiceRicetta: string;
+    dataRichiesta: string;
+    stato: "Disdetta" | "Completata" | "Prenotata" | "Da prenotare";
+    note?: string;
+  };
+
+  const getAmbulatorioVisits = (patientId: number): VisitaAmbulatorio[] => {
+    const visits: Record<number, VisitaAmbulatorio[]> = {
+      1: [
+        { id: 1, ambulatorio: "Cure Simultanee", tipo: "Prima visita", codiceRicetta: "0123456789", dataRichiesta: "2024-01-10", stato: "Completata", note: "Follow-up tra 3 mesi" },
+        { id: 2, ambulatorio: "Oncogeriatria", tipo: "Controllo", codiceRicetta: "9876543210", dataRichiesta: "2024-01-18", stato: "Prenotata", note: "Portare esami recenti" },
+        { id: 3, ambulatorio: "Osteoncologia", tipo: "Discussione", codiceRicetta: "2233445566", dataRichiesta: "2024-01-22", stato: "Da prenotare" }
+      ],
+      2: [
+        { id: 1, ambulatorio: "Oncogeriatria", tipo: "Radioterapia", codiceRicetta: "1111222233", dataRichiesta: "2024-01-12", stato: "Disdetta", note: "Riprogrammare" }
+      ],
+      3: [
+        { id: 1, ambulatorio: "Cure Simultanee", tipo: "Follow-up", codiceRicetta: "5566778899", dataRichiesta: "2024-01-08", stato: "Completata" }
+      ],
+      4: [
+        { id: 1, ambulatorio: "Osteoncologia", tipo: "Valutazione", codiceRicetta: "0099887766", dataRichiesta: "2024-01-14", stato: "Prenotata" }
+      ],
+      5: [
+        { id: 1, ambulatorio: "Osteoncologia", tipo: "Controllo", codiceRicetta: "3344556677", dataRichiesta: "2024-01-16", stato: "Completata" }
+      ],
+      6: [
+        { id: 1, ambulatorio: "Cure Simultanee", tipo: "Prima visita", codiceRicetta: "7788990011", dataRichiesta: "2024-01-18", stato: "Da prenotare", note: "In attesa di esito" }
+      ],
+      999: [
+        { id: 1, ambulatorio: "Cure Simultanee", tipo: "Prima visita", codiceRicetta: "1234567890", dataRichiesta: "2024-01-20", stato: "Completata" },
+        { id: 2, ambulatorio: "Oncogeriatria", tipo: "Controllo", codiceRicetta: "1357913579", dataRichiesta: "2024-01-25", stato: "Prenotata" },
+        { id: 3, ambulatorio: "Osteoncologia", tipo: "Discussione", codiceRicetta: "2468024680", dataRichiesta: "2024-01-28", stato: "Da prenotare", note: "Richiesta valutazione multidisciplinare" }
+      ]
+    };
+    return visits[patientId] || [];
+  };
+
+  const getStatoBadgeColor = (stato: VisitaAmbulatorio["stato"]) => {
+    switch (stato) {
+      case "Completata":
+        return "bg-green-100 text-green-800";
+      case "Prenotata":
+        return "bg-blue-100 text-blue-800";
+      case "Disdetta":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-yellow-100 text-yellow-800"; // Da prenotare
+    }
+  };
+
   if (!patient) {
     return (
       <div className="min-h-screen bg-background">
@@ -277,7 +267,7 @@ const PazienteDetailOncologo = () => {
           <div className="text-center py-8">
             <h1 className="text-2xl font-bold text-red-600 mb-4">Paziente Non Trovato</h1>
             <p className="text-muted-foreground mb-4">Il codice fiscale inserito non è valido.</p>
-            <Button onClick={() => navigate('/oncologico-v2/oncologo')}>
+            <Button onClick={() => navigate('/oncologico/oncologo')}>
               <ArrowLeft className="w-4 h-4 mr-2" />
               Torna al Profilo Oncologo
             </Button>
@@ -295,7 +285,7 @@ const PazienteDetailOncologo = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" onClick={() => navigate('/oncologico-v2/oncologo')}>
+            <Button variant="ghost" size="sm" onClick={() => navigate('/oncologico/oncologo')}>
               <ArrowLeft className="w-4 h-4 mr-2" />
               Torna al Profilo
             </Button>
@@ -384,85 +374,42 @@ const PazienteDetailOncologo = () => {
             </CardContent>
           </Card>
 
-          {/* Storico Visite */}
+          {/* Storico Visite per Ambulatori */}
           <Card>
             <CardHeader>
               <CardTitle>Storico Visite</CardTitle>
-              <CardDescription>Cronologia delle visite effettuate</CardDescription>
+              <CardDescription>Visite relative agli ambulatori con stato e note</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {patient.storicoVisite.map((visita, index) => (
-                  <div key={index} className="p-4 border rounded-lg">
-                    <div className="flex justify-between items-start mb-2">
-                      <span className="font-medium">{visita.tipo}</span>
-                      <span className="text-sm text-muted-foreground">{visita.data}</span>
+                {getAmbulatorioVisits(patient.id).map((v) => (
+                  <div key={v.id} className="p-4 border rounded-lg">
+                    <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">{v.tipo}</span>
+                        <Badge className={getStatoBadgeColor(v.stato)}>{v.stato}</Badge>
+                      </div>
+                      <span className="text-sm text-muted-foreground">{v.dataRichiesta}</span>
                     </div>
-                    <div className="text-sm text-muted-foreground mb-2">
-                      Medico: {visita.medico}
+                    <div className="grid md:grid-cols-3 gap-3 text-sm text-muted-foreground mb-1">
+                      <div><strong>Ambulatorio:</strong> {v.ambulatorio}</div>
+                      <div><strong>Codice Ricetta:</strong> {v.codiceRicetta}</div>
+                      <div><strong>Data richiesta:</strong> {v.dataRichiesta}</div>
                     </div>
-                    <div className="text-sm">
-                      <strong>Esito:</strong> {visita.esito}
-                    </div>
+                    {v.note && (
+                      <div className="text-sm bg-muted p-3 rounded">
+                        <strong>Note:</strong> {v.note}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
             </CardContent>
           </Card>
 
-          {/* Esiti Esami */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Esiti Esami</CardTitle>
-              <CardDescription>Risultati degli esami diagnostici</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {getExamResults(patient.id).map((esame) => (
-                  <div key={esame.id} className="p-4 border rounded-lg">
-                    <div className="flex justify-between items-start mb-2">
-                      <span className="font-medium">{esame.tipo}</span>
-                      <Badge variant={esame.stato === "Completato" ? "default" : "secondary"}>
-                        {esame.stato}
-                      </Badge>
-                    </div>
-                    <div className="text-sm text-muted-foreground mb-2">
-                      Data: {esame.data}
-                    </div>
-                    <div className="text-sm">
-                      <strong>Esito:</strong> {esame.esito}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          {/* Esiti Esami rimossi per profilo oncologo */}
 
-          {/* Verbali Visite */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Verbali Visite</CardTitle>
-              <CardDescription>Documenti completi delle visite</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {getVisitReports(patient.id).map((verbale) => (
-                  <div key={verbale.id} className="p-4 border rounded-lg">
-                    <div className="flex justify-between items-start mb-2">
-                      <span className="font-medium">{verbale.tipo}</span>
-                      <span className="text-sm text-muted-foreground">{verbale.data}</span>
-                    </div>
-                    <div className="text-sm text-muted-foreground mb-2">
-                      Medico: {verbale.medico}
-                    </div>
-                    <div className="text-sm bg-muted p-3 rounded">
-                      <strong>Verbale:</strong> {verbale.verbale}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          {/* Verbali Visite rimossi per profilo oncologo */}
         </div>
       </div>
     </div>

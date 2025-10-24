@@ -28,9 +28,9 @@ const CaseManagerNavbar = () => {
 
         {/* Navigazione */}
         <div className="flex items-center gap-1">
-          <Link to="/oncologico-v2/case-manager">
+          <Link to="/oncologico/case-manager">
             <Button 
-              variant={isActive("/oncologico-v2/case-manager") && !isActive("/oncologico-v2/case-manager/pazienti") && !isActive("/oncologico-v2/case-manager/visite") && !isActive("/oncologico-v2/case-manager/ricerca") ? "default" : "ghost"}
+              variant={isActive("/oncologico/case-manager") && !isActive("/oncologico/case-manager/pazienti") && !isActive("/oncologico/case-manager/visite") && !isActive("/oncologico/case-manager/ricerca") ? "default" : "ghost"}
               size="sm"
               className="flex items-center gap-2"
             >
@@ -39,9 +39,9 @@ const CaseManagerNavbar = () => {
             </Button>
           </Link>
           
-          <Link to="/oncologico-v2/case-manager/pazienti">
+          <Link to="/oncologico/case-manager/pazienti">
             <Button 
-              variant={isActive("/oncologico-v2/case-manager/pazienti") ? "default" : "ghost"}
+              variant={isActive("/oncologico/case-manager/pazienti") ? "default" : "ghost"}
               size="sm"
               className="flex items-center gap-2"
             >
@@ -50,9 +50,9 @@ const CaseManagerNavbar = () => {
             </Button>
           </Link>
           
-          <Link to="/oncologico-v2/case-manager/visite">
+          <Link to="/oncologico/case-manager/visite">
             <Button 
-              variant={isActive("/oncologico-v2/case-manager/visite") ? "default" : "ghost"}
+              variant={isActive("/oncologico/case-manager/visite") ? "default" : "ghost"}
               size="sm"
               className="flex items-center gap-2"
             >
@@ -61,9 +61,9 @@ const CaseManagerNavbar = () => {
             </Button>
           </Link>
           
-          <Link to="/oncologico-v2/case-manager/ricerca">
+          <Link to="/oncologico/case-manager/ricerca">
             <Button 
-              variant={isActive("/oncologico-v2/case-manager/ricerca") ? "default" : "ghost"}
+              variant={isActive("/oncologico/case-manager/ricerca") ? "default" : "ghost"}
               size="sm"
               className="flex items-center gap-2"
             >

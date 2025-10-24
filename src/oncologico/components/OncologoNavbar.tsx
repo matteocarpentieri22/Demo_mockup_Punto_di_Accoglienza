@@ -7,18 +7,24 @@ import { useState, useEffect } from "react";
 const OncologoNavbar = () => {
   const location = useLocation();
   const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(2);
+  const [totalNotificationsCount, setTotalNotificationsCount] = useState(5);
 
-  // Aggiorna il conteggio delle notifiche non lette
+  // Aggiorna il conteggio delle notifiche
   useEffect(() => {
     const handleStorageChange = () => {
-      const count = localStorage.getItem('unreadNotificationsCount');
-      if (count) {
-        setUnreadNotificationsCount(parseInt(count));
+      const unreadCount = localStorage.getItem('unreadNotificationsCount');
+      const totalCount = localStorage.getItem('totalNotificationsCount');
+      if (unreadCount) {
+        setUnreadNotificationsCount(parseInt(unreadCount));
+      }
+      if (totalCount) {
+        setTotalNotificationsCount(parseInt(totalCount));
       }
     };
 
     const handleNotificationsUpdate = (event: CustomEvent) => {
       setUnreadNotificationsCount(event.detail.unreadCount);
+      setTotalNotificationsCount(event.detail.totalCount);
     };
 
     // Ascolta i cambiamenti nel localStorage
@@ -27,10 +33,14 @@ const OncologoNavbar = () => {
     // Ascolta l'evento personalizzato per aggiornamenti in tempo reale
     window.addEventListener('notificationsUpdated', handleNotificationsUpdate as EventListener);
     
-    // Controlla il valore iniziale
-    const count = localStorage.getItem('unreadNotificationsCount');
-    if (count) {
-      setUnreadNotificationsCount(parseInt(count));
+    // Controlla i valori iniziali
+    const unreadCount = localStorage.getItem('unreadNotificationsCount');
+    const totalCount = localStorage.getItem('totalNotificationsCount');
+    if (unreadCount) {
+      setUnreadNotificationsCount(parseInt(unreadCount));
+    }
+    if (totalCount) {
+      setTotalNotificationsCount(parseInt(totalCount));
     }
 
     return () => {
@@ -61,9 +71,9 @@ const OncologoNavbar = () => {
 
         {/* Navigazione */}
         <div className="flex items-center gap-1">
-          <Link to="/oncologico-v2/oncologo">
+          <Link to="/oncologico/oncologo">
             <Button 
-              variant={isActive("/oncologico-v2/oncologo") ? "default" : "ghost"}
+              variant={isActive("/oncologico/oncologo") ? "default" : "ghost"}
               size="sm"
               className="flex items-center gap-2"
             >
@@ -72,9 +82,9 @@ const OncologoNavbar = () => {
             </Button>
           </Link>
           
-          <Link to="/oncologico-v2/oncologo/richieste">
+          <Link to="/oncologico/oncologo/richieste">
             <Button 
-              variant={isActive("/oncologico-v2/oncologo/richieste") ? "default" : "ghost"}
+              variant={isActive("/oncologico/oncologo/richieste") ? "default" : "ghost"}
               size="sm"
               className="flex items-center gap-2"
             >
@@ -83,21 +93,21 @@ const OncologoNavbar = () => {
             </Button>
           </Link>
           
-          <Link to="/oncologico-v2/oncologo/notifiche" className="relative">
+          <Link to="/oncologico/oncologo/notifiche" className="relative">
             <Button 
-              variant={isActive("/oncologico-v2/oncologo/notifiche") ? "default" : "ghost"}
+              variant={isActive("/oncologico/oncologo/notifiche") ? "default" : "ghost"}
               size="sm"
               className="flex items-center gap-2"
             >
               <Bell className="w-4 h-4" />
               Notifiche
             </Button>
-            {unreadNotificationsCount > 0 && (
+            {totalNotificationsCount > 0 && (
               <Badge 
                 variant="destructive" 
                 className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs font-bold"
               >
-                {unreadNotificationsCount}
+                {totalNotificationsCount}
               </Badge>
             )}
           </Link>

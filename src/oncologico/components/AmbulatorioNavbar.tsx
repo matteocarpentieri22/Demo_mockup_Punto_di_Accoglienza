@@ -103,7 +103,7 @@ const AmbulatorioNavbar = ({ ambulatorio }: AmbulatorioNavbarProps) => {
 
         {/* Navigazione */}
         <div className="flex items-center gap-1">
-          <Link to="/oncologico-v2">
+          <Link to="/oncologico">
             <Button 
               variant="ghost"
               size="sm"
@@ -114,9 +114,9 @@ const AmbulatorioNavbar = ({ ambulatorio }: AmbulatorioNavbarProps) => {
             </Button>
           </Link>
           
-          <Link to={`/oncologico-v2/ambulatori/${ambulatorio}`}>
+          <Link to={`/oncologico/ambulatori/${ambulatorio}`}>
             <Button 
-              variant={isActive(`/oncologico-v2/ambulatori/${ambulatorio}`) ? "default" : "ghost"}
+              variant={isActive(`/oncologico/ambulatori/${ambulatorio}`) ? "default" : "ghost"}
               size="sm"
               className="flex items-center gap-2"
             >
@@ -125,9 +125,9 @@ const AmbulatorioNavbar = ({ ambulatorio }: AmbulatorioNavbarProps) => {
             </Button>
           </Link>
           
-          <Link to={`/oncologico-v2/ambulatori/${ambulatorio}/pianificazione`}>
+          <Link to={`/oncologico/ambulatori/${ambulatorio}/pianificazione`}>
             <Button 
-              variant={isActive(`/oncologico-v2/ambulatori/${ambulatorio}/pianificazione`) ? "default" : "ghost"}
+              variant={isActive(`/oncologico/ambulatori/${ambulatorio}/pianificazione`) ? "default" : "ghost"}
               size="sm"
               className="flex items-center gap-2"
             >
@@ -136,9 +136,9 @@ const AmbulatorioNavbar = ({ ambulatorio }: AmbulatorioNavbarProps) => {
             </Button>
           </Link>
           
-          <Link to={`/oncologico-v2/ambulatori/${ambulatorio}/verbali`}>
+          <Link to={`/oncologico/ambulatori/${ambulatorio}/verbali`}>
             <Button 
-              variant={isActive(`/oncologico-v2/ambulatori/${ambulatorio}/verbali`) ? "default" : "ghost"}
+              variant={isActive(`/oncologico/ambulatori/${ambulatorio}/verbali`) ? "default" : "ghost"}
               size="sm"
               className="flex items-center gap-2"
             >

@@ -1,16 +1,16 @@
-# Modulo Oncologico V2 - Profili Distinti
+# Modulo Oncologico - Profili Distinti
 
 Questa è la versione alternativa del modulo oncologico che presenta profili distinti per diverse figure professionali del personale IOV.
 
 ## Struttura
 
 ### Cartelle
-- `src/oncologico-v2/components/` - Componenti specifici della versione 2
-- `src/oncologico-v2/pages/` - Pagine del modulo oncologico v2
+- `src/oncologico/components/` - Componenti specifici del sistema oncologico
+- `src/oncologico/pages/` - Pagine del modulo oncologico
 
 ### Pagine Principali
 
-#### 1. Home (`OncologicoV2Home.tsx`)
+#### 1. Home (`OncologicoHome.tsx`)
 - Pagina di selezione del profilo
 - Presenta le due opzioni: Oncologo/Radioterapista e Case Manager
 - Informazioni sui profili disponibili
@@ -251,16 +251,16 @@ Questa è la versione alternativa del modulo oncologico che presenta profili dis
 ## Navigazione
 
 ### Rotte Disponibili
-- `/oncologico-v2` - Home con selezione profilo
-- `/oncologico-v2/oncologo` - Profilo oncologo/radioterapista
-- `/oncologico-v2/oncologo/notifiche` - Notifiche oncologo/radioterapista
-- `/oncologico-v2/oncologo/richieste` - Richieste prenotazione oncologo
-- `/oncologico-v2/case-manager` - Home case manager con card
-- `/oncologico-v2/case-manager/pazienti` - Lista pazienti ordinata per score
-- `/oncologico-v2/case-manager/visite` - Visite ambulatori e calendario
-- `/oncologico-v2/case-manager/ricerca` - Ricerca paziente per CF
-- `/oncologico-v2/calendario` - Calendario ambulatori (legacy)
-- `/oncologico-v2/paziente/:cf` - Pagina dettaglio paziente (per codice fiscale)
+- `/oncologico` - Home con selezione profilo
+- `/oncologico/oncologo` - Profilo oncologo/radioterapista
+- `/oncologico/oncologo/notifiche` - Notifiche oncologo/radioterapista
+- `/oncologico/oncologo/richieste` - Richieste prenotazione oncologo
+- `/oncologico/case-manager` - Home case manager con card
+- `/oncologico/case-manager/pazienti` - Lista pazienti ordinata per score
+- `/oncologico/case-manager/visite` - Visite ambulatori e calendario
+- `/oncologico/case-manager/ricerca` - Ricerca paziente per CF
+- `/oncologico/calendario` - Calendario ambulatori (legacy)
+- `/oncologico/paziente/:cf` - Pagina dettaglio paziente (per codice fiscale)
 
 ### Navbar Separate per Profilo
 

@@ -6,8 +6,8 @@ import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/shared/components/ui/table";
-import { ArrowLeft, Download, Eye, Users, Search, Filter } from "lucide-react";
-import CaseManagerNavbar from "@/oncologico-v2/components/CaseManagerNavbar";
+import { ArrowLeft, Download, Eye, Users, Search, Filter, FileText } from "lucide-react";
+import CaseManagerNavbar from "@/oncologico/components/CaseManagerNavbar";
 import { useNavigate } from "react-router-dom";
 
 // Lista dei 9 PDTA disponibili (stessa lista usata negli altri moduli)
@@ -45,6 +45,7 @@ const PazientiListPage = () => {
       slotPrenotato: true,
       dataPrenotazione: "2024-01-20",
       oraPrenotazione: "09:30",
+      impegnativaPDF: "impegnativa_mario_rossi.pdf",
       comorbidita: ["Diabete tipo 2", "Ipertensione"],
       storicoVisite: [
         { data: "2024-01-10", tipo: "Prima visita", medico: "Dr. Bianchi", esito: "Diagnosi confermata" },
@@ -68,6 +69,7 @@ const PazientiListPage = () => {
       slotPrenotato: false,
       dataPrenotazione: null,
       oraPrenotazione: null,
+      impegnativaPDF: "impegnativa_anna_bianchi.pdf",
       comorbidita: ["Osteoporosi"],
       storicoVisite: [
         { data: "2024-01-12", tipo: "Visita oncologica", medico: "Dr. Verdi", esito: "Programmata radioterapia" }
@@ -89,6 +91,7 @@ const PazientiListPage = () => {
       slotPrenotato: true,
       dataPrenotazione: "2024-01-18",
       oraPrenotazione: "14:00",
+      impegnativaPDF: "impegnativa_giuseppe_verdi.pdf",
       comorbidita: ["Cardiopatia ischemica", "Diabete tipo 2"],
       storicoVisite: [
         { data: "2024-01-08", tipo: "Visita geriatrica", medico: "Dr. Rossi", esito: "Valutazione completata" },
@@ -112,6 +115,7 @@ const PazientiListPage = () => {
       slotPrenotato: false,
       dataPrenotazione: null,
       oraPrenotazione: null,
+      impegnativaPDF: "impegnativa_francesca_neri.pdf",
       comorbidita: ["Epilessia"],
       storicoVisite: [
         { data: "2024-01-14", tipo: "Visita neurologica", medico: "Dr. Bianchi", esito: "In attesa di esami" }
@@ -133,6 +137,7 @@ const PazientiListPage = () => {
       slotPrenotato: true,
       dataPrenotazione: "2024-01-22",
       oraPrenotazione: "10:00",
+      impegnativaPDF: "impegnativa_luigi_ferrari.pdf",
       comorbidita: ["Diverticolosi"],
       storicoVisite: [
         { data: "2024-01-16", tipo: "Visita gastroenterologica", medico: "Dr. Verdi", esito: "Follow-up programmato" }
@@ -154,6 +159,7 @@ const PazientiListPage = () => {
       slotPrenotato: false,
       dataPrenotazione: null,
       oraPrenotazione: null,
+      impegnativaPDF: "impegnativa_maria_romano.pdf",
       comorbidita: [],
       storicoVisite: [
         { data: "2024-01-18", tipo: "Visita dermatologica", medico: "Dr. Bianchi", esito: "Discussione caso" }
@@ -212,10 +218,32 @@ const PazientiListPage = () => {
     window.URL.revokeObjectURL(url);
   };
 
+
   const getScoreColor = (score: number) => {
     if (score >= 7) return "bg-red-100 text-red-800";
     if (score >= 5) return "bg-yellow-100 text-yellow-800";
     return "bg-green-100 text-green-800";
+  };
+
+  // Logica demo: tempi attesi in base allo score
+  // - Score 7-10: entro 3 giorni
+  // - Score 5-6: entro 7 giorni
+  // - Score 1-4: entro 14 giorni
+  const getDeadlineDays = (score: number) => {
+    if (score >= 7) return 3;
+    if (score >= 5) return 7;
+    return 14;
+  };
+
+  const isOnTime = (patient: any) => {
+    if (!patient.dataPrenotazione) return false; // non prenotato => non in tempo
+    // Per la demo, assumiamo che la richiesta sia la prima data dello storicoScore
+    const firstScoreDate = patient.storicoScore?.[0]?.data || "2024-01-01";
+    const requestDate = new Date(firstScoreDate);
+    const bookingDate = new Date(patient.dataPrenotazione);
+    const diffDays = Math.ceil((bookingDate.getTime() - requestDate.getTime()) / (1000 * 60 * 60 * 24));
+    const deadline = getDeadlineDays(patient.score);
+    return diffDays <= deadline;
   };
 
   return (
@@ -226,7 +254,7 @@ const PazientiListPage = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" onClick={() => navigate('/oncologico-v2/case-manager')}>
+            <Button variant="ghost" size="sm" onClick={() => navigate('/oncologico/case-manager')}>
               <ArrowLeft className="w-4 h-4 mr-2" />
               Indietro
             </Button>
@@ -386,6 +414,8 @@ const PazientiListPage = () => {
                   <TableHead className="font-semibold text-gray-700">Medico Mittente</TableHead>
                   <TableHead className="font-semibold text-gray-700">Score</TableHead>
                   <TableHead className="font-semibold text-gray-700">Slot</TableHead>
+                  <TableHead className="font-semibold text-gray-700">In Tempo</TableHead>
+                  <TableHead className="font-semibold text-gray-700">PDF Impegnativa</TableHead>
                   <TableHead className="font-semibold text-gray-700">Azioni</TableHead>
                 </TableRow>
               </TableHeader>
@@ -419,14 +449,36 @@ const PazientiListPage = () => {
                       )}
                     </TableCell>
                     <TableCell className="py-4">
+                      {patient.slotPrenotato ? (
+                        isOnTime(patient) ? (
+                          <Badge className="bg-green-100 text-green-800">In tempo</Badge>
+                        ) : (
+                          <Badge className="bg-red-100 text-red-800">Fuori tempo</Badge>
+                        )
+                      ) : (
+                        <Badge className="bg-gray-100 text-gray-700">N/D</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => window.open(`/pdf/${patient.impegnativaPDF}`, '_blank')}
+                        className="border-blue-300 text-blue-700 hover:bg-blue-50"
+                      >
+                        <Eye className="w-3 h-3 mr-1" />
+                        Visualizza
+                      </Button>
+                    </TableCell>
+                    <TableCell className="py-4">
                       <Button 
                         variant="outline" 
                         size="sm"
-                        onClick={() => navigate(`/oncologico-v2/paziente/${patient.cf}`)}
+                        onClick={() => navigate(`/oncologico/paziente/${patient.cf}`)}
                         className="border-gray-300 text-gray-700 hover:bg-gray-50"
                       >
                         <Eye className="w-4 h-4 mr-1" />
-                        Visualizza
+                        Scheda Paziente
                       </Button>
                     </TableCell>
                   </TableRow>

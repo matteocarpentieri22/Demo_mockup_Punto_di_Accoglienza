@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { ArrowLeft, BarChart3, PieChart, TrendingUp, Users, Clock, AlertCircle, Maximize2, X } from "lucide-react";
-import { OncologicoNavbar } from "@/oncologico/components/OncologicoNavbar";
+import CaseManagerNavbar from "@/oncologico/components/CaseManagerNavbar";
 import { useNavigate } from "react-router-dom";
 
 // Mock data per i grafici
@@ -58,7 +58,7 @@ type WeekData = {
   inLavorazione: number;
 };
 
-const Dashboard = () => {
+const CaseManagerDashboard = () => {
   const navigate = useNavigate();
   const [viewType, setViewType] = useState<"bubble" | "bar">("bubble");
   const [expandedChart, setExpandedChart] = useState<"bubble" | "bar" | null>(null);
@@ -421,100 +421,105 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <OncologicoNavbar />
-
-      <div className="container mx-auto px-4 py-4">
+      <CaseManagerNavbar />
+      
+      <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" onClick={() => navigate('/oncologico')}>
+            <Button variant="ghost" size="sm" onClick={() => navigate('/oncologico/case-manager')}>
               <ArrowLeft className="w-4 h-4 mr-2" />
               Indietro
             </Button>
+            <div>
+              <h1 className="text-2xl font-bold">Dashboard Case Manager</h1>
+              <p className="text-muted-foreground">Monitora l'avanzamento dei percorsi PDTA</p>
+            </div>
           </div>
         </div>
 
-        {/* Chart Toggle and Summary Cards */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3 gap-3">
-          {/* Chart Toggle */}
-          <div className="flex bg-muted rounded-lg p-1">
-            <Button
-              variant={viewType === "bubble" ? "default" : "ghost"}
-              onClick={() => setViewType("bubble")}
-              className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm"
-            >
-              <PieChart className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">Grafico a Bolle</span>
-              <span className="sm:hidden">Bolle</span>
-            </Button>
-            <Button
-              variant={viewType === "bar" ? "default" : "ghost"}
-              onClick={() => setViewType("bar")}
-              className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm"
-            >
-              <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">Trend Settimanale</span>
-              <span className="sm:hidden">Trend</span>
-            </Button>
-          </div>
+        {/* Controls */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex gap-2">
+              <Button
+                variant={viewType === "bubble" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setViewType("bubble")}
+                className="flex items-center gap-2"
+              >
+                <PieChart className="w-4 h-4" />
+                Grafico a Bolle
+              </Button>
+              <Button
+                variant={viewType === "bar" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setViewType("bar")}
+                className="flex items-center gap-2"
+              >
+                <BarChart3 className="w-4 h-4" />
+                Trend Settimanale
+              </Button>
+            </div>
+            
+            {/* Summary Cards - Compact */}
+            <div className="flex flex-wrap gap-1 sm:gap-2">
+              <Card>
+                <CardContent className="p-1 sm:p-2">
+                  <div className="flex items-center gap-1 sm:gap-2">
+                    <div className="w-5 h-5 sm:w-6 sm:h-6 bg-primary/10 rounded-full flex items-center justify-center">
+                      <Users className="w-2 h-2 sm:w-3 sm:h-3 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Totale</p>
+                      <p className="text-xs sm:text-sm font-bold">29</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
-          {/* Summary Cards - Compact */}
-          <div className="flex flex-wrap gap-1 sm:gap-2">
-            <Card>
-              <CardContent className="p-1 sm:p-2">
-                <div className="flex items-center gap-1 sm:gap-2">
-                  <div className="w-5 h-5 sm:w-6 sm:h-6 bg-primary/10 rounded-full flex items-center justify-center">
-                    <Users className="w-2 h-2 sm:w-3 sm:h-3 text-primary" />
+              <Card>
+                <CardContent className="p-1 sm:p-2">
+                  <div className="flex items-center gap-1 sm:gap-2">
+                    <div className="w-5 h-5 sm:w-6 sm:h-6 bg-yellow-500/10 rounded-full flex items-center justify-center">
+                      <Clock className="w-2 h-2 sm:w-3 sm:h-3 text-yellow-500" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Attesa</p>
+                      <p className="text-xs sm:text-sm font-bold">14</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Totale</p>
-                    <p className="text-xs sm:text-sm font-bold">29</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
 
-            <Card>
-              <CardContent className="p-1 sm:p-2">
-                <div className="flex items-center gap-1 sm:gap-2">
-                  <div className="w-5 h-5 sm:w-6 sm:h-6 bg-yellow-500/10 rounded-full flex items-center justify-center">
-                    <Clock className="w-2 h-2 sm:w-3 sm:h-3 text-yellow-500" />
+              <Card>
+                <CardContent className="p-1 sm:p-2">
+                  <div className="flex items-center gap-1 sm:gap-2">
+                    <div className="w-5 h-5 sm:w-6 sm:h-6 bg-green-500/10 rounded-full flex items-center justify-center">
+                      <TrendingUp className="w-2 h-2 sm:w-3 sm:h-3 text-green-500" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">GOM</p>
+                      <p className="text-xs sm:text-sm font-bold">15</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Attesa</p>
-                    <p className="text-xs sm:text-sm font-bold">14</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
 
-            <Card>
-              <CardContent className="p-1 sm:p-2">
-                <div className="flex items-center gap-1 sm:gap-2">
-                  <div className="w-5 h-5 sm:w-6 sm:h-6 bg-green-500/10 rounded-full flex items-center justify-center">
-                    <TrendingUp className="w-2 h-2 sm:w-3 sm:h-3 text-green-500" />
+              <Card>
+                <CardContent className="p-1 sm:p-2">
+                  <div className="flex items-center gap-1 sm:gap-2">
+                    <div className="w-5 h-5 sm:w-6 sm:h-6 bg-red-500/10 rounded-full flex items-center justify-center">
+                      <AlertCircle className="w-2 h-2 sm:w-3 sm:h-3 text-red-500" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Urgenti</p>
+                      <p className="text-xs sm:text-sm font-bold">2</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">GOM</p>
-                    <p className="text-xs sm:text-sm font-bold">15</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-1 sm:p-2">
-                <div className="flex items-center gap-1 sm:gap-2">
-                  <div className="w-5 h-5 sm:w-6 sm:h-6 bg-red-500/10 rounded-full flex items-center justify-center">
-                    <AlertCircle className="w-2 h-2 sm:w-3 sm:h-3 text-red-500" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Urgenti</p>
-                    <p className="text-xs sm:text-sm font-bold">2</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
 
@@ -552,4 +557,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default CaseManagerDashboard;
