@@ -7,7 +7,7 @@ import { Label } from "@/shared/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/shared/components/ui/table";
 import { ArrowLeft, Search, Filter, FileText, Clock, CheckCircle, AlertCircle, Download, Eye, User, Calendar, Calculator } from "lucide-react";
-import OncologoNavbar from "@/oncologico/components/OncologoNavbar";
+import OncologoNavbar from "@/oncologico/components/layout/OncologoNavbar";
 import { useNavigate } from "react-router-dom";
 
 // Lista dei 9 PDTA disponibili

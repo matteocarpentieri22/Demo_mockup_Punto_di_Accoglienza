@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { Users, Calendar, Search, UserPlus, BarChart3, List } from "lucide-react";
-import CaseManagerNavbar from "@/oncologico/components/CaseManagerNavbar";
+import CaseManagerNavbar from "@/oncologico/components/layout/CaseManagerNavbar";
 import { useNavigate } from "react-router-dom";
 
 const CaseManagerHome = () => {

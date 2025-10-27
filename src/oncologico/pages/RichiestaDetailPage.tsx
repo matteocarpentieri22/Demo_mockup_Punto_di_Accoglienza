@@ -4,7 +4,7 @@ import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
 import { Label } from "@/shared/components/ui/label";
 import { ArrowLeft, FileText, User, Calendar, Calculator, Clock, CheckCircle, AlertCircle, Eye, Download } from "lucide-react";
-import OncologoNavbar from "@/oncologico/components/OncologoNavbar";
+import OncologoNavbar from "@/oncologico/components/layout/OncologoNavbar";
 import { useNavigate, useParams } from "react-router-dom";
 
 // Mock data richieste (stesso array della pagina principale)

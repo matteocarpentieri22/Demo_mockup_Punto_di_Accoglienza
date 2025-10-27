@@ -4,12 +4,15 @@ import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/shared/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
-import { ArrowLeft, Calendar, Users, Clock, CheckCircle, AlertCircle, Download, Plus, Eye, User, Trash2, MessageSquare, Stethoscope } from "lucide-react";
-import OsteoncologiaNavbar from "@/oncologico/components/OsteoncologiaNavbar";
+import { ArrowLeft, Calendar, Users, Clock, CheckCircle, AlertCircle, Download, Plus, Eye, User, Trash2, MessageSquare, Stethoscope, FileSpreadsheet, FileText, ChevronDown } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/shared/components/ui/dropdown-menu";
+import OsteoncologiaNavbar from "@/oncologico/components/layout/OsteoncologiaNavbar";
 import { useNavigate } from "react-router-dom";
+import { exportToExcel, exportToPDF, formatDateForFilename } from "@/oncologico/utils/export";
 
 const OsteoncologiaPage = () => {
   const navigate = useNavigate();
+  const [selectedDate] = useState(new Date().toISOString().split('T')[0]);
 
   // Mock data per occupazione giornaliera
   const [occupazione] = useState([
@@ -57,7 +60,7 @@ const OsteoncologiaPage = () => {
     }
   };
 
-  const handleExportOccupazione = () => {
+  const handleExportCSV = () => {
     const csvContent = [
       ["Ora", "Paziente", "CF", "Patologia", "Quesito Diagnostico", "Medico Richiedente", "Stato"],
       ...occupazione.map(visita => [
@@ -75,9 +78,48 @@ const OsteoncologiaPage = () => {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "occupazione_osteoncologia.csv";
+    a.download = `osteoncologia_${formatDateForFilename(selectedDate)}.csv`;
     a.click();
     window.URL.revokeObjectURL(url);
+  };
+
+  const handleExportExcel = () => {
+    const columns = [
+      { header: "Ora", key: "ora" },
+      { header: "Paziente", key: "paziente" },
+      { header: "CF", key: "cf" },
+      { header: "Patologia", key: "patologia" },
+      { header: "Quesito Diagnostico", key: "quesitoDiagnostico" },
+      { header: "Medico Richiedente", key: "medicoRichiedente" },
+      { header: "Stato", key: "stato" }
+    ];
+
+    exportToExcel(
+      occupazione,
+      columns,
+      `osteoncologia_${formatDateForFilename(selectedDate)}`,
+      `Occupazione Ambulatorio Osteoncologia - ${selectedDate}`
+    );
+  };
+
+  const handleExportPDF = () => {
+    const columns = [
+      { header: "Ora", key: "ora", width: 10 },
+      { header: "Paziente", key: "paziente", width: 30 },
+      { header: "CF", key: "cf", width: 20 },
+      { header: "Patologia", key: "patologia", width: 30 },
+      { header: "Quesito", key: "quesitoDiagnostico", width: 40 },
+      { header: "Medico", key: "medicoRichiedente", width: 25 },
+      { header: "Stato", key: "stato", width: 15 }
+    ];
+
+    exportToPDF(
+      occupazione,
+      columns,
+      `osteoncologia_${formatDateForFilename(selectedDate)}`,
+      `Occupazione Ambulatorio Osteoncologia`,
+      `Data: ${selectedDate}`
+    );
   };
 
   return (
@@ -121,10 +163,29 @@ const OsteoncologiaPage = () => {
                       Occupazione Giornaliera
                     </CardTitle>
                   </div>
-                  <Button onClick={handleExportOccupazione} className="flex items-center gap-2">
-                    <Download className="w-4 h-4" />
-                    Esporta CSV
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button className="flex items-center gap-2">
+                        <Download className="w-4 h-4" />
+                        Esporta
+                        <ChevronDown className="w-4 h-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={handleExportCSV}>
+                        <FileText className="w-4 h-4 mr-2" />
+                        Esporta CSV
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleExportExcel}>
+                        <FileSpreadsheet className="w-4 h-4 mr-2" />
+                        Esporta Excel
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleExportPDF}>
+                        <FileText className="w-4 h-4 mr-2" />
+                        Esporta PDF
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </CardHeader>
               <CardContent>
@@ -185,23 +246,23 @@ const OsteoncologiaPage = () => {
                                         <div className="flex items-center gap-2">
                                           <User className="w-4 h-4 text-gray-600" />
                                           <div>
-                                            <div className="font-semibold text-gray-900 text-sm">{visita.paziente}</div>
-                                            <div className="text-xs text-gray-600">{orario} - {orario.split(':')[0]}:{parseInt(orario.split(':')[1]) + 30}</div>
+                                            <div className="font-bold text-gray-900 text-base mb-1">{visita.paziente}</div>
+                                            <div className="text-sm text-gray-600">{orario} - {orario.split(':')[0]}:{parseInt(orario.split(':')[1]) + 30}</div>
                                           </div>
                                         </div>
                                         <Badge className={`${getStatoColor(visita.stato)} px-2 py-1 text-xs font-medium`}>
                                           {getStatoText(visita.stato)}
                                         </Badge>
                                       </div>
-                                      <div className="space-y-1 text-xs">
+                                      <div className="space-y-2 text-sm">
                                         <div className="text-gray-700">
-                                          <span className="font-medium">Patologia:</span> {visita.patologia}
+                                          <span className="font-semibold">Patologia:</span> {visita.patologia}
                                         </div>
                                         <div className="text-gray-700">
-                                          <span className="font-medium">Quesito:</span> {visita.quesitoDiagnostico}
+                                          <span className="font-semibold">Quesito:</span> {visita.quesitoDiagnostico}
                                         </div>
                                         <div className="text-gray-700">
-                                          <span className="font-medium">Medico:</span> {visita.medicoRichiedente}
+                                          <span className="font-semibold">Medico:</span> {visita.medicoRichiedente}
                                         </div>
                                       </div>
                                     </div>

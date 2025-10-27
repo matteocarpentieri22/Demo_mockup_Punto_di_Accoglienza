@@ -1,0 +1,6 @@
+# Cartella per Custom Hooks del Modulo Oncologico
+# Qui potrai aggiungere hooks riutilizzabili come:
+# - useNotifications()
+# - usePazienti()
+# - useRichiesta()
+

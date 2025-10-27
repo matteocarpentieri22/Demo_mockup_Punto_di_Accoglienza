@@ -5,12 +5,14 @@ import { Badge } from "@/shared/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/shared/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/shared/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/shared/components/ui/dropdown-menu";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 import { Textarea } from "@/shared/components/ui/textarea";
-import { ArrowLeft, Calendar, Users, Clock, CheckCircle, AlertCircle, Download, Plus, Eye, Edit, Trash2, Lock, Unlock, Search, Filter, ChevronLeft, ChevronRight, User, MessageSquare, Stethoscope } from "lucide-react";
-import CureSimultaneeNavbar from "@/oncologico/components/CureSimultaneeNavbar";
+import { ArrowLeft, Calendar, Users, Clock, CheckCircle, AlertCircle, Download, Plus, Eye, Edit, Trash2, Lock, Unlock, Search, Filter, ChevronLeft, ChevronRight, User, MessageSquare, Stethoscope, FileSpreadsheet, FileText, ChevronDown } from "lucide-react";
+import { exportToExcel, exportToPDF, formatDateForFilename } from "@/oncologico/utils/export";
+import CureSimultaneeNavbar from "@/oncologico/components/layout/CureSimultaneeNavbar";
 import { useNavigate } from "react-router-dom";
 
 const CureSimultaneePage = () => {
@@ -76,7 +78,7 @@ const CureSimultaneePage = () => {
     }
   };
 
-  const handleExportOccupazione = () => {
+  const handleExportCSV = () => {
     const csvContent = [
       ["Ora", "Paziente", "CF", "Problemi", "Medico Referente", "Stato"],
       ...occupazione.map(o => [o.ora, o.paziente, o.cf, o.problemi, o.medicoReferente, o.stato])
@@ -84,9 +86,46 @@ const CureSimultaneePage = () => {
 
     const a = document.createElement("a");
     a.href = URL.createObjectURL(new Blob([csvContent], { type: "text/csv" }));
-    a.download = "occupazione_cure_simultanee.csv";
+    a.download = `cure_simultanee_${formatDateForFilename(selectedDate)}.csv`;
     a.click();
     window.URL.revokeObjectURL(a.href);
+  };
+
+  const handleExportExcel = () => {
+    const columns = [
+      { header: "Ora", key: "ora" },
+      { header: "Paziente", key: "paziente" },
+      { header: "CF", key: "cf" },
+      { header: "Problemi", key: "problemi" },
+      { header: "Medico Referente", key: "medicoReferente" },
+      { header: "Stato", key: "stato" }
+    ];
+
+    exportToExcel(
+      occupazione,
+      columns,
+      `cure_simultanee_${formatDateForFilename(selectedDate)}`,
+      `Occupazione Ambulatorio Cure Simultanee - ${selectedDate}`
+    );
+  };
+
+  const handleExportPDF = () => {
+    const columns = [
+      { header: "Ora", key: "ora", width: 10 },
+      { header: "Paziente", key: "paziente", width: 25 },
+      { header: "CF", key: "cf", width: 20 },
+      { header: "Problemi", key: "problemi", width: 40 },
+      { header: "Medico Referente", key: "medicoReferente", width: 20 },
+      { header: "Stato", key: "stato", width: 15 }
+    ];
+
+    exportToPDF(
+      occupazione,
+      columns,
+      `cure_simultanee_${formatDateForFilename(selectedDate)}`,
+      `Occupazione Ambulatorio Cure Simultanee`,
+      `Data: ${selectedDate}`
+    );
   };
 
 
@@ -290,13 +329,36 @@ const CureSimultaneePage = () => {
                     <Button variant="outline" size="sm" onClick={() => setSelectedDate(new Date().toISOString().split('T')[0])}>
                       Oggi
                     </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button size="sm" className="flex items-center gap-2">
+                          <Download className="w-4 h-4" />
+                          Esporta
+                          <ChevronDown className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={handleExportCSV}>
+                          <FileText className="w-4 h-4 mr-2" />
+                          Esporta CSV
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleExportExcel}>
+                          <FileSpreadsheet className="w-4 h-4 mr-2" />
+                          Esporta Excel
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleExportPDF}>
+                          <FileText className="w-4 h-4 mr-2" />
+                          Esporta PDF
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </div>
               </CardHeader>
               <CardContent>
-                {/* Layout a due colonne: Agenda e Discussioni */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* Colonna Sinistra: AGENDA DEL GIORNO */}
+                {/* Layout a una colonna: Agenda */}
+                <div>
+                  {/* AGENDA DEL GIORNO */}
                   <div className="space-y-4">
                     <div className="bg-white rounded-lg shadow-sm border border-gray-200">
                       <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-4 rounded-t-lg">
@@ -351,20 +413,20 @@ const CureSimultaneePage = () => {
                                         <div className="flex items-center gap-2">
                                           <User className="w-4 h-4 text-gray-600" />
                                           <div>
-                                            <div className="font-semibold text-gray-900 text-sm">{visita.paziente}</div>
-                                            <div className="text-xs text-gray-600">{orario} - {orario.split(':')[0]}:{parseInt(orario.split(':')[1]) + 30}</div>
+                                            <div className="font-bold text-gray-900 text-base mb-1">{visita.paziente}</div>
+                                            <div className="text-sm text-gray-600">{orario} - {orario.split(':')[0]}:{parseInt(orario.split(':')[1]) + 30}</div>
                                           </div>
                                         </div>
                                         <Badge className={`${getStatoColor(visita.stato)} px-2 py-1 text-xs font-medium`}>
                                           {getStatoText(visita.stato)}
                                         </Badge>
                                       </div>
-                                      <div className="space-y-1 text-xs">
+                                      <div className="space-y-2 text-sm">
                                         <div className="text-gray-700">
-                                          <span className="font-medium">Problemi:</span> {visita.problemi}
+                                          <span className="font-semibold">Problemi:</span> {visita.problemi}
                                         </div>
                                         <div className="text-gray-700">
-                                          <span className="font-medium">Medico:</span> {visita.medicoReferente}
+                                          <span className="font-semibold">Medico:</span> {visita.medicoReferente}
                                         </div>
                                       </div>
                                       <div className="flex items-center gap-1 mt-2">
@@ -395,77 +457,6 @@ const CureSimultaneePage = () => {
                               </div>
                             );
                           })}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Colonna Destra: DISCUSSIONI MEDICHE */}
-                  <div className="space-y-4">
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-                      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-4 rounded-t-lg">
-                        <h3 className="text-lg font-bold uppercase tracking-wide">Discussioni Mediche</h3>
-                      </div>
-                      <div className="p-6">
-                        <div className="space-y-4">
-                          {/* Discussione 1 */}
-                          <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                            <div className="flex items-start gap-3">
-                              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                <MessageSquare className="w-4 h-4 text-blue-600" />
-                              </div>
-                              <div className="flex-1">
-                                <h4 className="font-semibold text-gray-900 mb-2">
-                                  Caso clinico paziente oncologico - revisione terapia
-                                </h4>
-                                <div className="space-y-2">
-                                  <div className="text-sm text-gray-600">
-                                    <span className="font-medium">Partecipanti:</span>
-                                    <div className="flex items-center gap-2 mt-1">
-                                      <div className="w-6 h-6 bg-blue-600 text-white text-xs rounded-full flex items-center justify-center">DR</div>
-                                      <div className="w-6 h-6 bg-blue-600 text-white text-xs rounded-full flex items-center justify-center">DE</div>
-                                      <div className="w-6 h-6 bg-blue-600 text-white text-xs rounded-full flex items-center justify-center">DV</div>
-                                    </div>
-                                    <div className="text-xs text-gray-500 mt-1">
-                                      Dr. Rossi, Dr. Bianchi, Dr. Verdi
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Discussione 2 */}
-                          <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                            <div className="flex items-start gap-3">
-                              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                <MessageSquare className="w-4 h-4 text-blue-600" />
-                              </div>
-                              <div className="flex-1">
-                                <h4 className="font-semibold text-gray-900 mb-2">
-                                  Pianificazione intervento chirurgico urgente
-                                </h4>
-                                <div className="space-y-2">
-                                  <div className="text-sm text-gray-600">
-                                    <span className="font-medium">Partecipanti:</span>
-                                    <div className="flex items-center gap-2 mt-1">
-                                      <div className="w-6 h-6 bg-blue-600 text-white text-xs rounded-full flex items-center justify-center">DF</div>
-                                      <div className="w-6 h-6 bg-blue-600 text-white text-xs rounded-full flex items-center justify-center">DC</div>
-                                    </div>
-                                    <div className="text-xs text-gray-500 mt-1">
-                                      Dr. Ferrari, Dr. Colombo
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Aggiungi discussione */}
-                          <div className="p-4 border-2 border-dashed border-gray-300 rounded-lg text-center hover:border-blue-400 hover:bg-blue-50 transition-colors cursor-pointer">
-                            <Plus className="w-6 h-6 text-gray-400 mx-auto mb-2" />
-                            <p className="text-sm text-gray-500">Aggiungi nuova discussione</p>
-                          </div>
                         </div>
                       </div>
                     </div>

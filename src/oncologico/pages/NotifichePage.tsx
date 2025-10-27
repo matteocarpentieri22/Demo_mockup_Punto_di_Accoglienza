@@ -1,13 +1,38 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent } from "@/shared/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
-import { ArrowLeft, Bell, CheckCircle, AlertCircle, Clock, User, Calendar, FileText, Trash2 } from "lucide-react";
-import OncologoNavbar from "@/oncologico/components/OncologoNavbar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
+import { Input } from "@/shared/components/ui/input";
+import { ArrowLeft, Bell, CheckCircle, Clock, User, Calendar, FileText, Trash2, Filter, History } from "lucide-react";
+import OncologoNavbar from "@/oncologico/components/layout/OncologoNavbar";
 import { useNavigate } from "react-router-dom";
+
+interface Notifica {
+  id: number;
+  tipo: string;
+  titolo: string;
+  descrizione: string;
+  data: string;
+  ora: string;
+  paziente: string;
+  cf: string;
+  ambulatorio: string;
+  medico: string;
+  priorita: string;
+  letto: boolean;
+  archiviata: boolean;
+}
 
 const NotifichePage = () => {
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState("non-lette");
+  const [filtroTipo, setFiltroTipo] = useState("tutti");
+  const [filtroPriorita, setFiltroPriorita] = useState("tutti");
+  const [filtroData, setFiltroData] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  
   const [notifiche, setNotifiche] = useState([
     {
       id: 1,
@@ -21,7 +46,8 @@ const NotifichePage = () => {
       ambulatorio: "Cure Simultanee",
       medico: "Dr. Bianchi",
       priorita: "alta",
-      letto: false
+      letto: false,
+      archiviata: false
     },
     {
       id: 2,
@@ -35,7 +61,8 @@ const NotifichePage = () => {
       ambulatorio: "Oncogeriatria",
       medico: "Dr. Verdi",
       priorita: "media",
-      letto: false
+      letto: false,
+      archiviata: false
     },
     {
       id: 3,
@@ -49,7 +76,8 @@ const NotifichePage = () => {
       ambulatorio: "Oncogeriatria",
       medico: "Dr. Rossi",
       priorita: "alta",
-      letto: false
+      letto: false,
+      archiviata: false
     },
     {
       id: 4,
@@ -63,7 +91,8 @@ const NotifichePage = () => {
       ambulatorio: "Osteoncologia",
       medico: "Dr. Bianchi",
       priorita: "media",
-      letto: false
+      letto: false,
+      archiviata: false
     },
     {
       id: 5,
@@ -77,7 +106,8 @@ const NotifichePage = () => {
       ambulatorio: "Osteoncologia",
       medico: "Dr. Verdi",
       priorita: "media",
-      letto: false
+      letto: false,
+      archiviata: false
     },
     {
       id: 6,
@@ -91,7 +121,8 @@ const NotifichePage = () => {
       ambulatorio: "Cure Simultanee",
       medico: "Dr. Bianchi",
       priorita: "alta",
-      letto: false
+      letto: false,
+      archiviata: false
     },
     {
       id: 7,
@@ -105,7 +136,8 @@ const NotifichePage = () => {
       ambulatorio: "Oncogeriatria",
       medico: "Dr. Rossi",
       priorita: "bassa",
-      letto: false
+      letto: false,
+      archiviata: false
     },
     {
       id: 8,
@@ -119,7 +151,8 @@ const NotifichePage = () => {
       ambulatorio: "Cure Simultanee",
       medico: "Dr. Verdi",
       priorita: "alta",
-      letto: false
+      letto: false,
+      archiviata: false
     },
     {
       id: 9,
@@ -133,7 +166,8 @@ const NotifichePage = () => {
       ambulatorio: "Osteoncologia",
       medico: "Dr. Bianchi",
       priorita: "media",
-      letto: false
+      letto: false,
+      archiviata: false
     },
     {
       id: 10,
@@ -147,7 +181,8 @@ const NotifichePage = () => {
       ambulatorio: "Oncogeriatria",
       medico: "Dr. Rossi",
       priorita: "media",
-      letto: false
+      letto: false,
+      archiviata: false
     },
     {
       id: 11,
@@ -161,7 +196,8 @@ const NotifichePage = () => {
       ambulatorio: "Osteoncologia",
       medico: "Dr. Verdi",
       priorita: "alta",
-      letto: false
+      letto: false,
+      archiviata: false
     },
     {
       id: 12,
@@ -175,7 +211,8 @@ const NotifichePage = () => {
       ambulatorio: "Cure Simultanee",
       medico: "Dr. Bianchi",
       priorita: "alta",
-      letto: false
+      letto: false,
+      archiviata: false
     },
     {
       id: 13,
@@ -189,7 +226,8 @@ const NotifichePage = () => {
       ambulatorio: "Oncogeriatria",
       medico: "Dr. Rossi",
       priorita: "bassa",
-      letto: false
+      letto: false,
+      archiviata: false
     },
     {
       id: 14,
@@ -203,7 +241,8 @@ const NotifichePage = () => {
       ambulatorio: "Cure Simultanee",
       medico: "Dr. Verdi",
       priorita: "alta",
-      letto: false
+      letto: false,
+      archiviata: false
     },
     {
       id: 15,
@@ -217,7 +256,8 @@ const NotifichePage = () => {
       ambulatorio: "Osteoncologia",
       medico: "Dr. Bianchi",
       priorita: "media",
-      letto: false
+      letto: false,
+      archiviata: false
     }
   ]);
 
@@ -227,7 +267,7 @@ const NotifichePage = () => {
     localStorage.setItem('unreadNotificationsCount', unreadCount.toString());
   }, []);
 
-  const handleNotificaClick = (notifica: any) => {
+  const handleNotificaClick = (notifica: Notifica) => {
     // Se la notifica non è ancora stata letta, la marco come letta
     if (!notifica.letto) {
       setNotifiche(prevNotifiche => {
@@ -253,10 +293,13 @@ const NotifichePage = () => {
     event.stopPropagation(); // Previene il click sulla card
     
     setNotifiche(prevNotifiche => {
-      const updatedNotifiche = prevNotifiche.filter(n => n.id !== notificaId);
+      // Invece di eliminare, archivia la notifica
+      const updatedNotifiche = prevNotifiche.map(n => 
+        n.id === notificaId ? { ...n, archiviata: true, letto: true } : n
+      );
       
       // Aggiorna il conteggio nel localStorage
-      const unreadCount = updatedNotifiche.filter(n => !n.letto).length;
+      const unreadCount = updatedNotifiche.filter(n => !n.letto && !n.archiviata).length;
       localStorage.setItem('unreadNotificationsCount', unreadCount.toString());
       
       // Triggera un evento personalizzato per aggiornare la navbar
@@ -294,7 +337,58 @@ const NotifichePage = () => {
     }
   };
 
-  const notificheNonLette = notifiche.filter(n => !n.letto);
+  const getTipoLabel = (tipo: string) => {
+    switch (tipo) {
+      case "esito_visita":
+        return "Esito Visita";
+      case "discussione_caso":
+        return "Discussione Caso";
+      case "esito_esame":
+        return "Esito Esame";
+      default:
+        return tipo;
+    }
+  };
+
+  // Filtra le notifiche in base a tutti i criteri
+  const getFilteredNotifiche = () => {
+    return notifiche.filter(n => {
+      // Filtro per archiviate
+      if (n.archiviata) return false;
+      
+      // Filtro per stato (non lette/lette/tutte)
+      if (activeTab === "non-lette" && n.letto) return false;
+      if (activeTab === "lette" && !n.letto) return false;
+      
+      // Filtro per tipo
+      if (filtroTipo !== "tutti" && n.tipo !== filtroTipo) return false;
+      
+      // Filtro per priorità
+      if (filtroPriorita !== "tutti" && n.priorita !== filtroPriorita) return false;
+      
+      // Filtro per data
+      if (filtroData && n.data !== filtroData) return false;
+      
+      // Filtro per ricerca
+      if (searchTerm) {
+        const searchLower = searchTerm.toLowerCase();
+        return (
+          n.titolo.toLowerCase().includes(searchLower) ||
+          n.descrizione.toLowerCase().includes(searchLower) ||
+          n.paziente.toLowerCase().includes(searchLower) ||
+          n.cf.toLowerCase().includes(searchLower) ||
+          n.ambulatorio.toLowerCase().includes(searchLower) ||
+          n.medico.toLowerCase().includes(searchLower)
+        );
+      }
+      
+      return true;
+    });
+  };
+
+  const filteredNotifiche = getFilteredNotifiche();
+  const notificheNonLette = notifiche.filter(n => !n.letto && !n.archiviata);
+  const notificheLette = notifiche.filter(n => n.letto && !n.archiviata);
   const notificheNonLetteCount = notificheNonLette.length;
 
   return (
@@ -321,54 +415,85 @@ const NotifichePage = () => {
           </div>
         </div>
 
-        {/* Statistiche */}
-        <div className="grid md:grid-cols-3 gap-4 mb-6">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                  <Bell className="w-5 h-5 text-blue-600" />
+        {/* Tabs per Stato */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <TabsList>
+              <TabsTrigger value="non-lette">
+                Non Lette ({notificheNonLette.length})
+              </TabsTrigger>
+              <TabsTrigger value="lette">
+                <History className="w-4 h-4 mr-2" />
+                Storico Lette ({notificheLette.length})
+              </TabsTrigger>
+              <TabsTrigger value="tutte">
+                Tutte ({notifiche.filter(n => !n.archiviata).length})
+              </TabsTrigger>
+            </TabsList>
+          </div>
+
+          {/* Filtri */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-sm">
+                <Filter className="w-4 h-4" />
+                Filtri
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid md:grid-cols-4 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">Cerca</label>
+                  <Input
+                    placeholder="Cerca nelle notifiche..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
                 </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Notifiche Non Lette</p>
-                  <p className="text-xl font-bold">{notificheNonLetteCount}</p>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">Tipo</label>
+                  <Select value={filtroTipo} onValueChange={setFiltroTipo}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="tutti">Tutti i tipi</SelectItem>
+                      <SelectItem value="esito_visita">Esito Visita</SelectItem>
+                      <SelectItem value="discussione_caso">Discussione Caso</SelectItem>
+                      <SelectItem value="esito_esame">Esito Esame</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">Priorità</label>
+                  <Select value={filtroPriorita} onValueChange={setFiltroPriorita}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="tutti">Tutte le priorità</SelectItem>
+                      <SelectItem value="alta">Alta</SelectItem>
+                      <SelectItem value="media">Media</SelectItem>
+                      <SelectItem value="bassa">Bassa</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">Data</label>
+                  <Input
+                    type="date"
+                    value={filtroData}
+                    onChange={(e) => setFiltroData(e.target.value)}
+                  />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                  <AlertCircle className="w-5 h-5 text-red-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Priorità Alta</p>
-                  <p className="text-xl font-bold">{notificheNonLette.filter(n => n.priorita === "alta").length}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
-                  <Clock className="w-5 h-5 text-yellow-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Oggi</p>
-                  <p className="text-xl font-bold">{notificheNonLette.filter(n => n.data === "2024-01-20").length}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Lista Notifiche */}
+          <TabsContent value="non-lette">
+            {/* Lista Notifiche Non Lette */}
         <div className="space-y-4">
-          {notificheNonLette.map((notifica) => (
+              {filteredNotifiche.filter(n => !n.letto).map((notifica) => (
             <Card 
               key={notifica.id} 
               className="border-l-4 border-l-blue-500 bg-blue-50/30 hover:shadow-md transition-shadow cursor-pointer"
@@ -436,16 +561,196 @@ const NotifichePage = () => {
           ))}
         </div>
 
-        {/* Messaggio se non ci sono notifiche */}
-        {notificheNonLetteCount === 0 && (
+            {/* Messaggio se non ci sono notifiche non lette */}
+            {filteredNotifiche.filter(n => !n.letto).length === 0 && (
           <Card>
             <CardContent className="p-8 text-center">
               <Bell className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Nessuna Notifica Non Letta</h3>
-              <p className="text-gray-500">Tutte le notifiche sono state lette o eliminate.</p>
+                  <p className="text-gray-500">Non ci sono notifiche non lette con i filtri selezionati.</p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          <TabsContent value="lette">
+            {/* Lista Notifiche Lette */}
+            <div className="space-y-4">
+              {filteredNotifiche.filter(n => n.letto).map((notifica) => (
+                <Card 
+                  key={notifica.id} 
+                  className="border-l-4 border-l-gray-400 bg-gray-50/30 hover:shadow-md transition-shadow cursor-pointer opacity-75"
+                  onClick={() => handleNotificaClick(notifica)}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4 flex-1">
+                        <div className="flex-shrink-0">
+                          {getTipoIcon(notifica.tipo)}
+                        </div>
+                        
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-3 mb-2">
+                            <Badge variant="outline" className="bg-gray-100 text-gray-700">
+                              Letta
+                            </Badge>
+                            <Badge className={getPrioritaColor(notifica.priorita)}>
+                              {notifica.priorita.toUpperCase()}
+                            </Badge>
+                            <h3 className="font-semibold text-gray-900">{notifica.titolo}</h3>
+                          </div>
+                          <p className="text-sm text-gray-600 mb-2">{notifica.descrizione}</p>
+                          
+                          <div className="grid md:grid-cols-2 gap-4 text-sm text-gray-500">
+                            <div className="flex items-center gap-2">
+                              <User className="w-4 h-4" />
+                              <span>{notifica.paziente} ({notifica.cf})</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Calendar className="w-4 h-4" />
+                              <span>{notifica.ambulatorio}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <FileText className="w-4 h-4" />
+                              <span>Medico: {notifica.medico}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Clock className="w-4 h-4" />
+                              <span>{notifica.data} alle {notifica.ora}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex-shrink-0 ml-4 flex gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => navigate(`/oncologico/oncologo/paziente/${notifica.cf}`)}
+                          className="whitespace-nowrap"
+                        >
+                          Visualizza Paziente
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={(e) => handleEliminaNotifica(notifica.id, e)}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Messaggio se non ci sono notifiche lette */}
+            {filteredNotifiche.filter(n => n.letto).length === 0 && (
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <History className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Nessuna Notifica Letta</h3>
+                  <p className="text-gray-500">Non ci sono notifiche lette con i filtri selezionati.</p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          <TabsContent value="tutte">
+            {/* Lista Tutte le Notifiche */}
+            <div className="space-y-4">
+              {filteredNotifiche.map((notifica) => (
+                <Card 
+                  key={notifica.id} 
+                  className={`border-l-4 hover:shadow-md transition-shadow cursor-pointer ${
+                    notifica.letto 
+                      ? 'border-l-gray-400 bg-gray-50/30 opacity-75' 
+                      : 'border-l-blue-500 bg-blue-50/30'
+                  }`}
+                  onClick={() => handleNotificaClick(notifica)}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4 flex-1">
+                        <div className="flex-shrink-0">
+                          {getTipoIcon(notifica.tipo)}
+                        </div>
+                        
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-3 mb-2">
+                            {notifica.letto ? (
+                              <Badge variant="outline" className="bg-gray-100 text-gray-700">
+                                Letta
+                              </Badge>
+                            ) : (
+                              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                            )}
+                            <Badge className={getPrioritaColor(notifica.priorita)}>
+                              {notifica.priorita.toUpperCase()}
+                            </Badge>
+                            <h3 className="font-semibold text-gray-900">{notifica.titolo}</h3>
+                          </div>
+                          <p className="text-sm text-gray-600 mb-2">{notifica.descrizione}</p>
+                          
+                          <div className="grid md:grid-cols-2 gap-4 text-sm text-gray-500">
+                            <div className="flex items-center gap-2">
+                              <User className="w-4 h-4" />
+                              <span>{notifica.paziente} ({notifica.cf})</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Calendar className="w-4 h-4" />
+                              <span>{notifica.ambulatorio}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <FileText className="w-4 h-4" />
+                              <span>Medico: {notifica.medico}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Clock className="w-4 h-4" />
+                              <span>{notifica.data} alle {notifica.ora}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex-shrink-0 ml-4 flex gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => navigate(`/oncologico/oncologo/paziente/${notifica.cf}`)}
+                          className="whitespace-nowrap"
+                        >
+                          Visualizza Paziente
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={(e) => handleEliminaNotifica(notifica.id, e)}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Messaggio se non ci sono notifiche */}
+            {filteredNotifiche.length === 0 && (
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <Bell className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Nessuna Notifica</h3>
+                  <p className="text-gray-500">Non ci sono notifiche con i filtri selezionati.</p>
             </CardContent>
           </Card>
         )}
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

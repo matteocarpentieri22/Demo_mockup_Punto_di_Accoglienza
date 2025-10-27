@@ -6,9 +6,32 @@ import { Label } from "@/shared/components/ui/label";
 import { Badge } from "@/shared/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/shared/components/ui/dialog";
-import { ArrowLeft, Calendar, Clock, CheckCircle, AlertCircle, Download, Filter, Plus, Lock, Unlock, MessageSquare, Stethoscope } from "lucide-react";
-import CaseManagerNavbar from "@/oncologico/components/CaseManagerNavbar";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/shared/components/ui/dropdown-menu";
+import { ArrowLeft, Calendar, Clock, CheckCircle, AlertCircle, Download, Filter, Plus, Lock, Unlock, MessageSquare, Stethoscope, FileSpreadsheet, FileText, ChevronDown } from "lucide-react";
+import CaseManagerNavbar from "@/oncologico/components/layout/CaseManagerNavbar";
 import { useNavigate } from "react-router-dom";
+import { exportToExcel, exportToPDF, formatDateForFilename } from "@/oncologico/utils/export";
+
+type SlotData = {
+  ora: string;
+  paziente: string;
+  tipo: string;
+  medico: string;
+  stato: string;
+  cf?: string;
+  // Campi per Cure Simultanee
+  problemi?: string;
+  // Campi per Oncogeriatria
+  neoplasia?: string;
+  stadio?: string;
+  finalitaTrattamento?: string;
+  ecogPS?: string;
+  punteggioG8?: string;
+  esitoVGM?: string;
+  quesitoGeriatra?: string;
+  // Campi per Osteoncologia
+  quesito?: string;
+};
 
 const VisiteAmbulatoriPage = () => {
   const navigate = useNavigate();
@@ -29,35 +52,39 @@ const VisiteAmbulatoriPage = () => {
   const [calendarData] = useState({
     "2024-01-15": {
       "Cure Simultanee": [
-        { ora: "09:00", paziente: "Mario Rossi", tipo: "Visita", medico: "Dr. Bianchi", stato: "confermata", cf: "RSSMRA80A01H501U" },
-        { ora: "10:30", paziente: "Anna Bianchi", tipo: "Discussione", medico: "Dr. Verdi", stato: "confermata", cf: "BNCNNA75B02H501V" },
-        { ora: "14:00", paziente: "", tipo: "Slot Libero", medico: "", stato: "libero", cf: "" },
-        { ora: "15:30", paziente: "Giuseppe Verdi", tipo: "Visita", medico: "Dr. Rossi", stato: "confermata", cf: "VRDGPP70C03H501W" }
+        { ora: "09:00", paziente: "Mario Rossi", tipo: "Visita", medico: "Dr. Bianchi", stato: "confermata", cf: "RSSMRA80A01H501U", problemi: "Dolore diffuso e dispnea" },
+        { ora: "10:30", paziente: "Anna Bianchi", tipo: "Visita", medico: "Dr. Verdi", stato: "confermata", cf: "BNCNNA75B02H501V", problemi: "Discordia di opinione su trattamento" },
+        { ora: "14:00", paziente: "", tipo: "Slot Libero", medico: "", stato: "libero", cf: "", problemi: "" },
+        { ora: "15:30", paziente: "Giuseppe Verdi", tipo: "Visita", medico: "Dr. Rossi", stato: "confermata", cf: "VRDGPP70C03H501W", problemi: "Alterazioni elettrolitiche" }
       ],
       "Oncogeriatria": [
-        { ora: "09:30", paziente: "Francesca Neri", tipo: "Visita", medico: "Dr. Bianchi", stato: "confermata", cf: "NRIFNC85D04H501X" },
-        { ora: "11:00", paziente: "", tipo: "Slot Libero", medico: "", stato: "libero", cf: "" },
-        { ora: "14:30", paziente: "Luigi Bianchi", tipo: "Discussione", medico: "Dr. Verdi", stato: "confermata", cf: "BNCLGI65E05H501Y" }
+        { ora: "09:30", paziente: "Francesca Neri", tipo: "Visita", medico: "Dr. Bianchi", stato: "confermata", cf: "NRIFNC85D04H501X", neoplasia: "Adenocarcinoma mammario", stadio: "T2N1M0", finalitaTrattamento: "Paliativa", ecogPS: "2", punteggioG8: "12", esitoVGM: "Positivo", quesitoGeriatra: "Valutazione fragilità e tossicità" },
+        { ora: "11:00", paziente: "", tipo: "Slot Libero", medico: "", stato: "libero", cf: "", neoplasia: "", stadio: "", finalitaTrattamento: "", ecogPS: "", punteggioG8: "", esitoVGM: "", quesitoGeriatra: "" },
+        { ora: "14:30", paziente: "Luigi Bianchi", tipo: "Visita", medico: "Dr. Verdi", stato: "confermata", cf: "BNCLGI65E05H501Y", neoplasia: "Adenocarcinoma colon", stadio: "T3N2M1", finalitaTrattamento: "Paliativa", ecogPS: "1", punteggioG8: "14", esitoVGM: "Negativo", quesitoGeriatra: "Ottimizzazione terapeutica" }
       ],
       "Osteoncologia": [
-        { ora: "10:00", paziente: "Maria Rossi", tipo: "Visita", medico: "Dr. Bianchi", stato: "confermata", cf: "RSSMRA70F06H501Z" },
-        { ora: "15:30", paziente: "", tipo: "Slot Libero", medico: "", stato: "libero", cf: "" },
-        { ora: "16:30", paziente: "Paolo Verdi", tipo: "Visita", medico: "Dr. Rossi", stato: "confermata", cf: "VRDPLO80G07H501A" }
+        { ora: "09:00", paziente: "Maria Rossi", tipo: "Visita", medico: "Dr. Bianchi", stato: "confermata", cf: "RSSMRA70F06H501Z", problemi: "Frattura patologica", quesito: "Stabilità frammenti e indicazione chirurgica" },
+        { ora: "10:30", paziente: "Giovanni Ferrari", tipo: "Discussione", medico: "Dr. Bianchi", stato: "confermata", cf: "FRRGNN75H08H501B", problemi: "Lesioni osteolitiche multiple", quesito: "Strategia terapeutica e indicazione intervento" },
+        { ora: "11:30", paziente: "Luisa Conti", tipo: "Discussione", medico: "Dr. Rossi", stato: "confermata", cf: "CNTLSU80I09H501C", problemi: "Patologia ossea secondaria", quesito: "Valutazione rischio frattura e terapia preventiva" },
+        { ora: "15:30", paziente: "", tipo: "Slot Libero", medico: "", stato: "libero", cf: "", problemi: "", quesito: "" },
+        { ora: "16:30", paziente: "Paolo Verdi", tipo: "Visita", medico: "Dr. Rossi", stato: "confermata", cf: "VRDPLO80G07H501A", problemi: "Osteonecrosi mandibola", quesito: "Gestione osteonecrosi e sospensione bisphosphonati" }
       ]
     },
     "2024-01-16": {
       "Cure Simultanee": [
-        { ora: "09:00", paziente: "", tipo: "Slot Libero", medico: "", stato: "libero", cf: "" },
-        { ora: "10:30", paziente: "Sofia Bianchi", tipo: "Visita", medico: "Dr. Verdi", stato: "confermata", cf: "BNCSFI75H08H501B" },
-        { ora: "14:00", paziente: "", tipo: "Slot Libero", medico: "", stato: "libero", cf: "" }
+        { ora: "09:00", paziente: "", tipo: "Slot Libero", medico: "", stato: "libero", cf: "", problemi: "" },
+        { ora: "10:30", paziente: "Sofia Bianchi", tipo: "Visita", medico: "Dr. Verdi", stato: "confermata", cf: "BNCSFI75H08H501B", problemi: "Effetti collaterali radioterapia" },
+        { ora: "14:00", paziente: "", tipo: "Slot Libero", medico: "", stato: "libero", cf: "", problemi: "" }
       ],
       "Oncogeriatria": [
-        { ora: "09:30", paziente: "", tipo: "Slot Libero", medico: "", stato: "libero", cf: "" },
-        { ora: "11:00", paziente: "Antonio Neri", tipo: "Visita", medico: "Dr. Bianchi", stato: "confermata", cf: "NRINTN85I09H501C" }
+        { ora: "09:30", paziente: "", tipo: "Slot Libero", medico: "", stato: "libero", cf: "", neoplasia: "", stadio: "", finalitaTrattamento: "", ecogPS: "", punteggioG8: "", esitoVGM: "", quesitoGeriatra: "" },
+        { ora: "11:00", paziente: "Antonio Neri", tipo: "Visita", medico: "Dr. Bianchi", stato: "confermata", cf: "NRINTN85I09H501C", neoplasia: "Mesotelioma pleurico", stadio: "T2N1M0", finalitaTrattamento: "Curativa", ecogPS: "1", punteggioG8: "15", esitoVGM: "Positivo", quesitoGeriatra: "Capacità tolleranza" }
       ],
       "Osteoncologia": [
-        { ora: "10:00", paziente: "Elena Rossi", tipo: "Visita", medico: "Dr. Bianchi", stato: "confermata", cf: "RSSELN70J10H501D" },
-        { ora: "15:30", paziente: "", tipo: "Slot Libero", medico: "", stato: "libero", cf: "" }
+        { ora: "09:00", paziente: "Andrea Martini", tipo: "Discussione", medico: "Dr. Bianchi", stato: "confermata", cf: "MRTNDR65K11H501E", problemi: "Frattura patologica omero", quesito: "Stabilizzazione chirurgica e radioterapia" },
+        { ora: "10:00", paziente: "Elena Rossi", tipo: "Visita", medico: "Dr. Bianchi", stato: "confermata", cf: "RSSELN70J10H501D", problemi: "Metastasi vertebra D8", quesito: "Terapia antalgica e radioterapia" },
+        { ora: "15:30", paziente: "", tipo: "Slot Libero", medico: "", stato: "libero", cf: "", problemi: "", quesito: "" },
+        { ora: "16:00", paziente: "Roberto Galli", tipo: "Discussione", medico: "Dr. Rossi", stato: "confermata", cf: "GLLRRT72L12H501F", problemi: "Osteolisi cranio", quesito: "Monitoraggio e follow-up" }
       ]
     }
   });
@@ -106,7 +133,7 @@ const VisiteAmbulatoriPage = () => {
       "",
       ...Object.entries(dailyData).map(([ambulatorio, slots]) => [
         `\n${ambulatorio}:`,
-        ...slots.map(slot => `  ${slot.ora} - ${slot.paziente || "Slot Libero"} - ${slot.tipo} - ${slot.medico || "N/A"} - ${slot.stato}`)
+        ...(slots as Array<{ora: string; paziente?: string; tipo: string; medico?: string; stato: string; cf?: string}>).map(slot => `  ${slot.ora} - ${slot.paziente || "Slot Libero"} - ${slot.tipo} - ${slot.medico || "N/A"} - ${slot.stato}`)
       ]).flat()
     ].join("\n");
 
@@ -119,28 +146,42 @@ const VisiteAmbulatoriPage = () => {
     window.URL.revokeObjectURL(url);
   };
 
-  const handleExportVisits = () => {
+  // Ottieni i dati delle visite per l'export (opzionale filtro per ambulatorio specifico)
+  const getVisitsData = (ambulatorioFiltro?: string) => {
     const dailyData = calendarData[selectedDate as keyof typeof calendarData] || {};
-    const visits = Object.entries(dailyData).flatMap(([ambulatorio, slots]) =>
-      slots.filter(slot => slot.paziente).map(slot => ({
+    const dataToUse = ambulatorioFiltro 
+      ? { [ambulatorioFiltro]: dailyData[ambulatorioFiltro as keyof typeof dailyData] }
+      : dailyData;
+    
+    return Object.entries(dataToUse).flatMap(([ambulatorio, slots]) =>
+      (slots as Array<SlotData>).filter(slot => slot.paziente && slot.stato === "confermata").map(slot => ({
         ambulatorio,
         ora: slot.ora,
-        paziente: slot.paziente,
+        paziente: slot.paziente || '',
         tipo: slot.tipo,
-        medico: slot.medico,
-        cf: slot.cf
+        medico: slot.medico || '',
+        cf: slot.cf || '',
+        stato: slot.stato
       }))
     );
+  };
 
+  const handleExportCSV = (ambulatorioSpecifico?: string) => {
+    const visits = getVisitsData(ambulatorioSpecifico);
+    const filename = ambulatorioSpecifico 
+      ? `visite_${ambulatorioSpecifico.toLowerCase().replace(/ /g, '_')}_${formatDateForFilename(selectedDate)}`
+      : `visite_ambulatori_${formatDateForFilename(selectedDate)}`;
+    
     const csvContent = [
-      ["Ambulatorio", "Ora", "Paziente", "Tipo", "Medico", "CF"],
+      ["Ambulatorio", "Ora", "Paziente", "Tipo", "Medico", "CF", "Stato"],
       ...visits.map(visit => [
         visit.ambulatorio,
         visit.ora,
         visit.paziente,
         visit.tipo,
         visit.medico,
-        visit.cf
+        visit.cf,
+        visit.stato
       ])
     ].map(row => row.join(",")).join("\n");
 
@@ -148,9 +189,66 @@ const VisiteAmbulatoriPage = () => {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `visite_${selectedDate}.csv`;
+    a.download = `${filename}.csv`;
     a.click();
     window.URL.revokeObjectURL(url);
+  };
+
+  const handleExportExcel = (ambulatorioSpecifico?: string) => {
+    const visits = getVisitsData(ambulatorioSpecifico);
+    const filename = ambulatorioSpecifico 
+      ? `visite_${ambulatorioSpecifico.toLowerCase().replace(/ /g, '_')}_${formatDateForFilename(selectedDate)}`
+      : `visite_ambulatori_${formatDateForFilename(selectedDate)}`;
+    
+    const title = ambulatorioSpecifico
+      ? `Visite ${ambulatorioSpecifico} - ${selectedDate}`
+      : `Visite Ambulatori - ${selectedDate}`;
+    
+    const columns = [
+      { header: "Ambulatorio", key: "ambulatorio" },
+      { header: "Ora", key: "ora" },
+      { header: "Paziente", key: "paziente" },
+      { header: "Tipo", key: "tipo" },
+      { header: "Medico", key: "medico" },
+      { header: "CF", key: "cf" },
+      { header: "Stato", key: "stato" }
+    ];
+
+    exportToExcel(
+      visits,
+      columns,
+      filename,
+      title
+    );
+  };
+
+  const handleExportPDF = (ambulatorioSpecifico?: string) => {
+    const visits = getVisitsData(ambulatorioSpecifico);
+    const filename = ambulatorioSpecifico 
+      ? `visite_${ambulatorioSpecifico.toLowerCase().replace(/ /g, '_')}_${formatDateForFilename(selectedDate)}`
+      : `visite_ambulatori_${formatDateForFilename(selectedDate)}`;
+    
+    const subtitle = ambulatorioSpecifico
+      ? `${ambulatorioSpecifico} - Data: ${selectedDate}`
+      : `Data: ${selectedDate}`;
+    
+    const columns = [
+      { header: "Ambulatorio", key: "ambulatorio", width: 20 },
+      { header: "Ora", key: "ora", width: 10 },
+      { header: "Paziente", key: "paziente", width: 30 },
+      { header: "Tipo", key: "tipo", width: 15 },
+      { header: "Medico", key: "medico", width: 25 },
+      { header: "CF", key: "cf", width: 20 },
+      { header: "Stato", key: "stato", width: 15 }
+    ];
+
+    exportToPDF(
+      visits,
+      columns,
+      filename,
+      `Visite ${ambulatorioSpecifico || "Ambulatori"}`,
+      subtitle
+    );
   };
 
   const handleBlockSlot = () => {
@@ -181,6 +279,23 @@ const VisiteAmbulatoriPage = () => {
     });
   };
 
+  // Determina le opzioni disponibili per il tipo in base all'ambulatorio
+  const getAvailableTypes = () => {
+    if (!blockSlotData.ambulatorio) {
+      return [];
+    }
+    if (blockSlotData.ambulatorio === "Osteoncologia") {
+      return [
+        { value: "visita", label: "Visita" },
+        { value: "discussione", label: "Discussione" }
+      ];
+    }
+    // Per Cure Simultanee e Oncogeriatria, solo visita
+    return [
+      { value: "visita", label: "Visita" }
+    ];
+  };
+
   const filteredData = selectedAmbulatorio === "tutti" 
     ? calendarData[selectedDate as keyof typeof calendarData] || {}
     : { [selectedAmbulatorio]: calendarData[selectedDate as keyof typeof calendarData]?.[selectedAmbulatorio] || [] };
@@ -201,16 +316,6 @@ const VisiteAmbulatoriPage = () => {
               <h1 className="text-2xl font-bold">Visite Ambulatori</h1>
               <p className="text-muted-foreground">Gestione calendario e coordinamento visite</p>
             </div>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={handleExportDay}>
-              <Download className="w-4 h-4 mr-2" />
-              Export Giornaliero
-            </Button>
-            <Button variant="outline" onClick={handleExportVisits}>
-              <Download className="w-4 h-4 mr-2" />
-              Export Visite
-            </Button>
           </div>
         </div>
 
@@ -265,7 +370,20 @@ const VisiteAmbulatoriPage = () => {
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="block-ambulatorio">Ambulatorio</Label>
-                          <Select value={blockSlotData.ambulatorio} onValueChange={(value) => setBlockSlotData({...blockSlotData, ambulatorio: value})}>
+                          <Select value={blockSlotData.ambulatorio} onValueChange={(value) => {
+                            // Quando cambia l'ambulatorio, resetta il tipo se non è più valido
+                            let newTipo = blockSlotData.tipo;
+                            if (value === "Osteoncologia") {
+                              // Osteoncologia supporta visita e discussione
+                              if (!["visita", "discussione"].includes(blockSlotData.tipo)) {
+                                newTipo = "visita";
+                              }
+                            } else {
+                              // Cure Simultanee e Oncogeriatria supportano solo visita
+                              newTipo = "visita";
+                            }
+                            setBlockSlotData({...blockSlotData, ambulatorio: value, tipo: newTipo});
+                          }}>
                             <SelectTrigger>
                               <SelectValue placeholder="Seleziona ambulatorio" />
                             </SelectTrigger>
@@ -290,13 +408,13 @@ const VisiteAmbulatoriPage = () => {
                       <div className="space-y-2">
                         <Label htmlFor="block-tipo">Tipo</Label>
                         <Select value={blockSlotData.tipo} onValueChange={(value) => setBlockSlotData({...blockSlotData, tipo: value})}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Seleziona tipo" />
+                          <SelectTrigger disabled={!blockSlotData.ambulatorio}>
+                            <SelectValue placeholder={blockSlotData.ambulatorio ? "Seleziona tipo" : "Seleziona prima l'ambulatorio"} />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="visita">Visita</SelectItem>
-                            <SelectItem value="discussione">Discussione</SelectItem>
-                            <SelectItem value="controllo">Controllo</SelectItem>
+                            {getAvailableTypes().map((type) => (
+                              <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </div>
@@ -365,23 +483,49 @@ const VisiteAmbulatoriPage = () => {
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   <span>{ambulatorio}</span>
-                  <Badge variant="outline">
-                    {slots.filter(slot => slot.stato === 'confermata').length} / {slots.length}
-                  </Badge>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="h-8 px-2">
+                        <Download className="w-4 h-4 mr-1" />
+                        Esporta
+                        <ChevronDown className="w-3 h-3 ml-1" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="min-w-[200px]">
+                      <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase">
+                        {ambulatorio}
+                      </div>
+                      <DropdownMenuItem onClick={() => handleExportCSV(ambulatorio)}>
+                        <FileText className="w-4 h-4 mr-2" />
+                        Esporta CSV
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleExportExcel(ambulatorio)}>
+                        <FileSpreadsheet className="w-4 h-4 mr-2" />
+                        Esporta Excel
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleExportPDF(ambulatorio)}>
+                        <FileText className="w-4 h-4 mr-2" />
+                        Esporta PDF
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </CardTitle>
                 <CardDescription>
-                  Visite e discussioni del {selectedDate}
+                  {ambulatorio === 'Osteoncologia' 
+                    ? `Visite e discussioni del ${selectedDate}`
+                    : `Visite del ${selectedDate}`
+                  }
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 {/* Separa Visite/Slot e Discussioni */}
                 {(() => {
                   const visiteSlots = slots.filter(s => s.tipo !== 'Discussione');
-                  const discussioniSlots = slots.filter(s => s.tipo === 'Discussione');
+                  const discussioniSlots = ambulatorio === 'Osteoncologia' ? slots.filter(s => s.tipo === 'Discussione') : [];
                   return (
                     <div className="space-y-6">
                       <div>
-                        <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2"><Stethoscope className="w-4 h-4 text-green-600" />Visite e Slot</h4>
+                        <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2"><Stethoscope className="w-4 h-4 text-green-600" />Visite</h4>
                         <div className="space-y-3">
                           {visiteSlots.map((slot, index) => (
                             <div key={`v-${index}`} className={`p-3 rounded-lg border ${getStatusColor(slot.stato)} bg-green-50 border-l-4 border-l-green-500`}>
@@ -410,10 +554,28 @@ const VisiteAmbulatoriPage = () => {
                               </div>
                               {slot.paziente ? (
                                 <div className="space-y-1 text-sm">
-                                  <p><strong>Paziente:</strong> {slot.paziente}</p>
-                                  <p><strong>Tipo:</strong> {slot.tipo}</p>
-                                  <p><strong>Medico:</strong> {slot.medico}</p>
-                                  <p><strong>CF:</strong> <span className="font-mono text-xs">{slot.cf}</span></p>
+                                  <p className="text-base font-bold text-gray-900 mb-2 border-b border-gray-200 pb-1">{slot.paziente}</p>
+                                  {ambulatorio === "Cure Simultanee" && (slot as SlotData).problemi && (
+                                    <p><strong>Problemi:</strong> {(slot as SlotData).problemi}</p>
+                                  )}
+                                  {ambulatorio === "Oncogeriatria" && (
+                                    <>
+                                      {(slot as SlotData).neoplasia && <p><strong>Neoplasia:</strong> {(slot as SlotData).neoplasia}</p>}
+                                      {(slot as SlotData).stadio && <p><strong>Stadio:</strong> {(slot as SlotData).stadio}</p>}
+                                      {(slot as SlotData).finalitaTrattamento && <p><strong>Finalità trattamento:</strong> {(slot as SlotData).finalitaTrattamento}</p>}
+                                      {(slot as SlotData).ecogPS && <p><strong>ECOG PS:</strong> {(slot as SlotData).ecogPS}</p>}
+                                      {(slot as SlotData).punteggioG8 && <p><strong>Punteggio G8:</strong> {(slot as SlotData).punteggioG8}</p>}
+                                      {(slot as SlotData).esitoVGM && <p><strong>Esito VGM:</strong> {(slot as SlotData).esitoVGM}</p>}
+                                      {(slot as SlotData).quesitoGeriatra && <p><strong>Quesito per geriatra:</strong> {(slot as SlotData).quesitoGeriatra}</p>}
+                                    </>
+                                  )}
+                                  {ambulatorio === "Osteoncologia" && (
+                                    <>
+                                      {(slot as SlotData).problemi && <p><strong>Problemi:</strong> {(slot as SlotData).problemi}</p>}
+                                      {(slot as SlotData).quesito && <p><strong>Quesito:</strong> {(slot as SlotData).quesito}</p>}
+                                    </>
+                                  )}
+                                  <p><strong>Medico Referente:</strong> {slot.medico}</p>
                                 </div>
                               ) : (
                                 <div className="text-sm text-muted-foreground">Slot disponibile per nuova prenotazione</div>
@@ -436,10 +598,28 @@ const VisiteAmbulatoriPage = () => {
                                   </div>
                                 </div>
                                 <div className="space-y-1 text-sm">
-                                  <p><strong>Paziente:</strong> {slot.paziente}</p>
-                                  <p><strong>Tipo:</strong> {slot.tipo}</p>
-                                  <p><strong>Medico:</strong> {slot.medico}</p>
-                                  <p><strong>CF:</strong> <span className="font-mono text-xs">{slot.cf}</span></p>
+                                  <p className="text-base font-bold text-blue-900 mb-2 border-b border-blue-200 pb-1">{slot.paziente}</p>
+                                  {ambulatorio === "Cure Simultanee" && (slot as SlotData).problemi && (
+                                    <p><strong>Problemi:</strong> {(slot as SlotData).problemi}</p>
+                                  )}
+                                  {ambulatorio === "Oncogeriatria" && (
+                                    <>
+                                      {(slot as SlotData).neoplasia && <p><strong>Neoplasia:</strong> {(slot as SlotData).neoplasia}</p>}
+                                      {(slot as SlotData).stadio && <p><strong>Stadio:</strong> {(slot as SlotData).stadio}</p>}
+                                      {(slot as SlotData).finalitaTrattamento && <p><strong>Finalità trattamento:</strong> {(slot as SlotData).finalitaTrattamento}</p>}
+                                      {(slot as SlotData).ecogPS && <p><strong>ECOG PS:</strong> {(slot as SlotData).ecogPS}</p>}
+                                      {(slot as SlotData).punteggioG8 && <p><strong>Punteggio G8:</strong> {(slot as SlotData).punteggioG8}</p>}
+                                      {(slot as SlotData).esitoVGM && <p><strong>Esito VGM:</strong> {(slot as SlotData).esitoVGM}</p>}
+                                      {(slot as SlotData).quesitoGeriatra && <p><strong>Quesito per geriatra:</strong> {(slot as SlotData).quesitoGeriatra}</p>}
+                                    </>
+                                  )}
+                                  {ambulatorio === "Osteoncologia" && (
+                                    <>
+                                      {(slot as SlotData).problemi && <p><strong>Problemi:</strong> {(slot as SlotData).problemi}</p>}
+                                      {(slot as SlotData).quesito && <p><strong>Quesito:</strong> {(slot as SlotData).quesito}</p>}
+                                    </>
+                                  )}
+                                  <p><strong>Medico Referente:</strong> {slot.medico}</p>
                                 </div>
                               </div>
                             ))}

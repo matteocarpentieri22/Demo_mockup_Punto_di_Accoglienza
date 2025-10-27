@@ -8,7 +8,7 @@ import { Label } from "@/shared/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { ArrowLeft, Download, Eye, Clock, CheckCircle, AlertCircle, User, Calendar, Plus, Save, Edit, FileText } from "lucide-react";
-import CaseManagerNavbar from "@/oncologico/components/CaseManagerNavbar";
+import CaseManagerNavbar from "@/oncologico/components/layout/CaseManagerNavbar";
 import { useNavigate, useParams } from "react-router-dom";
 
 // Lista dei 9 PDTA disponibili (stessa lista usata negli altri moduli)

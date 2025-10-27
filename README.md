@@ -73,14 +73,22 @@ Interfaccia dedicata ai pazienti per:
 
 ```
 src/
-├── oncologico/        # Modulo Oncologico
-│   ├── components/       # Componenti condivisi
+├── oncologico/          # Modulo Oncologico (refactorizzato)
+│   ├── components/
+│   │   ├── layout/      # Navbar e componenti layout
+│   │   └── features/    # Componenti per feature specifiche
 │   ├── pages/           # Pagine del modulo
-│   └── hooks/           # Custom hooks
+│   ├── hooks/           # Custom hooks
+│   ├── types/           # TypeScript types centralizzati
+│   └── utils/           # Utility functions e costanti
 ├── paziente/            # Modulo Paziente
+├── mmg/                 # Modulo MMG
 ├── shared/              # Componenti e utilities condivise
+├── routes/              # Sistema di routing modulare
 └── main.tsx            # Entry point dell'applicazione
 ```
+
+📖 Per dettagli completi sulla struttura, vedi [STRUCTURE.md](./STRUCTURE.md)
 
 ## 🎯 Funzionalità Principali
 

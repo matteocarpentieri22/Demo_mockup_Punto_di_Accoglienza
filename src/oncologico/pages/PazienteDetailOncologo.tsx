@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/sha
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
 import { ArrowLeft, Download, Eye, Clock, CheckCircle, AlertCircle, User } from "lucide-react";
-import OncologoNavbar from "@/oncologico/components/OncologoNavbar";
+import OncologoNavbar from "@/oncologico/components/layout/OncologoNavbar";
 import { useNavigate, useParams } from "react-router-dom";
 
 // Lista dei 9 PDTA disponibili (stessa lista usata negli altri moduli)

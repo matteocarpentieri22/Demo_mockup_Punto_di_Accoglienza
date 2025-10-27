@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/shared/components/ui/radio-group";
 import { Badge } from "@/shared/components/ui/badge";
 import { User, FileText, Bell, Calculator, Send, Calendar, Upload } from "lucide-react";
-import OncologoNavbar from "@/oncologico/components/OncologoNavbar";
+import OncologoNavbar from "@/oncologico/components/layout/OncologoNavbar";
 import { useNavigate } from "react-router-dom";
 
 type DemoPatient = { nome: string; cognome: string; dataNascita: string };
@@ -50,6 +50,14 @@ const OncologoPage = () => {
     quesitoDiagnostico: "",
     ambulatorio: "",
     score: {
+      // Campi per Cure Simultanee
+      psKarnofsky: "",
+      sintomi: [] as string[],
+      sopravvivenza: "",
+      trattamenti: "",
+      tossicita: "" as string,
+      problemiSocio: "" as string,
+      // Vecchi campi da rimuovere
       tosse: "",
       dolore: "",
       comorbidita: ""
@@ -66,7 +74,8 @@ const OncologoPage = () => {
       message: "Visita oncologica completata. Risultati disponibili.",
       date: "2024-01-20",
       urgent: false,
-      letto: false
+      letto: false,
+      archiviata: false
     },
     {
       id: 2,
@@ -75,7 +84,8 @@ const OncologoPage = () => {
       message: "Paziente inviata all'ambulatorio Cure Simultanee per discussione caso.",
       date: "2024-01-19",
       urgent: true,
-      letto: false
+      letto: false,
+      archiviata: false
     }
   ]);
 
@@ -112,10 +122,41 @@ const OncologoPage = () => {
   ];
 
   const calculateScore = () => {
-    const tosse = parseInt(formData.score.tosse) || 0;
-    const dolore = parseInt(formData.score.dolore) || 0;
-    const comorbidita = parseInt(formData.score.comorbidita) || 0;
-    return tosse + dolore + comorbidita;
+    if (formData.ambulatorio === "Cure Simultanee") {
+      // Score per Cure Simultanee
+      let total = 0;
+      
+      // PS (Karnofsky)
+      const psValue = formData.score.psKarnofsky === "50-60" ? 4 : 0;
+      total += psValue;
+      
+      // Sintomi (multi-select)
+      total += formData.score.sintomi.length;
+      if (formData.score.sintomi.includes("Dolore")) total += 1; // Dolore aggiunge 1 punto extra
+      
+      // Sopravvivenza stimata
+      if (formData.score.sopravvivenza === "6-12 mesi") total += 1;
+      if (formData.score.sopravvivenza === "≤ 6 mesi") total += 2;
+      
+      // Trattamenti
+      if (formData.score.trattamenti === "No") total += 2;
+      
+      // Tossicità
+      if (formData.score.tossicita !== "Nessuna" && formData.score.tossicita) total += 1;
+      
+      // Problemi socio-assistenziali
+      if (formData.score.problemiSocio === "Inadeguato supporto") total += 2;
+      if (formData.score.problemiSocio === "Rete famigliare scarsa") total += 1;
+      if (formData.score.problemiSocio === "Limitazioni assistenziali") total += 1;
+      
+      return total;
+    } else {
+      // Vecchio calcolo per altri ambulatori
+      const tosse = parseInt(formData.score.tosse) || 0;
+      const dolore = parseInt(formData.score.dolore) || 0;
+      const comorbidita = parseInt(formData.score.comorbidita) || 0;
+      return tosse + dolore + comorbidita;
+    }
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -171,6 +212,26 @@ const OncologoPage = () => {
                     <div className="flex items-center gap-2 mb-4">
                       <User className="w-5 h-5 text-blue-600" />
                       <h3 className="text-lg font-semibold text-gray-800">Dati Paziente</h3>
+                    </div>
+                    
+                    {/* Ambulatorio - PRIMISSIMO CAMPO */}
+                    <div className="space-y-3">
+                      <Label htmlFor="ambulatorio" className="text-sm font-medium text-gray-700">
+                        Ambulatorio *
+                      </Label>
+                      <Select value={formData.ambulatorio} onValueChange={(value) => setFormData({...formData, ambulatorio: value})}>
+                        <SelectTrigger className="h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                          <SelectValue placeholder="Seleziona ambulatorio" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {ambulatori.map((amb) => (
+                            <SelectItem key={amb} value={amb}>{amb}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-gray-500">
+                        Seleziona l'ambulatorio per visualizzare i campi specifici
+                      </p>
                     </div>
                     
                     <div className="grid md:grid-cols-2 gap-6">
@@ -247,21 +308,6 @@ const OncologoPage = () => {
                     
                     <div className="grid md:grid-cols-2 gap-6">
                       <div className="space-y-3">
-                        <Label htmlFor="ambulatorio" className="text-sm font-medium text-gray-700">
-                          Ambulatorio *
-                        </Label>
-                        <Select value={formData.ambulatorio} onValueChange={(value) => setFormData({...formData, ambulatorio: value})}>
-                          <SelectTrigger className="h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500">
-                            <SelectValue placeholder="Seleziona ambulatorio" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {ambulatori.map((amb) => (
-                              <SelectItem key={amb} value={amb}>{amb}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-3">
                         <Label htmlFor="impegnativa-pdf" className="text-sm font-medium text-gray-700">
                           Allegare PDF Impegnativa
                         </Label>
@@ -319,94 +365,264 @@ const OncologoPage = () => {
                   </div>
 
                   {/* Valutazione score clinico */}
-                  <div className="space-y-6">
-                    <div className="flex items-center gap-2 mb-4">
-                      <Calculator className="w-5 h-5 text-purple-600" />
-                      <h3 className="text-lg font-semibold text-gray-800">Valutazione Score Clinico</h3>
-                    </div>
-                    
-                    <div className="grid md:grid-cols-3 gap-6">
-                      {/* Tosse */}
-                      <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
-                        <Label className="text-sm font-medium text-gray-700">Tosse</Label>
-                        <RadioGroup
-                          value={formData.score.tosse}
-                          onValueChange={(value) => setFormData({
-                            ...formData, 
-                            score: {...formData.score, tosse: value}
-                          })}
-                          className="space-y-3"
-                        >
-                          <div className="flex items-center space-x-3 p-2 hover:bg-white rounded-md transition-colors">
-                            <RadioGroupItem value="3" id="tosse-3" className="text-blue-600" />
-                            <Label htmlFor="tosse-3" className="text-sm font-medium cursor-pointer">3 - Grave</Label>
-                          </div>
-                          <div className="flex items-center space-x-3 p-2 hover:bg-white rounded-md transition-colors">
-                            <RadioGroupItem value="2" id="tosse-2" className="text-blue-600" />
-                            <Label htmlFor="tosse-2" className="text-sm font-medium cursor-pointer">2 - Moderata</Label>
-                          </div>
-                          <div className="flex items-center space-x-3 p-2 hover:bg-white rounded-md transition-colors">
-                            <RadioGroupItem value="1" id="tosse-1" className="text-blue-600" />
-                            <Label htmlFor="tosse-1" className="text-sm font-medium cursor-pointer">1 - Lieve</Label>
-                          </div>
-                        </RadioGroup>
+                  {formData.ambulatorio && (
+                    <>
+                      <div className="flex items-center gap-2 mb-4">
+                        <Calculator className="w-5 h-5 text-purple-600" />
+                        <h3 className="text-lg font-semibold text-gray-800">Valutazione Score Clinico</h3>
                       </div>
+                      
+                      {formData.ambulatorio === "Cure Simultanee" && (
+                        <div className="space-y-6">
+                        {/* Score per Cure Simultanee */}
+                        <div className="grid md:grid-cols-2 gap-6">
+                          {/* PS Karnofsky */}
+                          <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
+                            <Label className="text-sm font-medium text-gray-700">PS (Karnofsky)</Label>
+                            <RadioGroup
+                              value={formData.score.psKarnofsky}
+                              onValueChange={(value) => setFormData({
+                                ...formData, 
+                                score: {...formData.score, psKarnofsky: value}
+                              })}
+                              className="space-y-3"
+                            >
+                              <div className="flex items-center space-x-3 p-2 hover:bg-white rounded-md transition-colors">
+                                <RadioGroupItem value=">70" id="ps1" className="text-blue-600" />
+                                <Label htmlFor="ps1" className="text-sm font-medium cursor-pointer">0 punti - &gt;70</Label>
+                              </div>
+                              <div className="flex items-center space-x-3 p-2 hover:bg-white rounded-md transition-colors">
+                                <RadioGroupItem value="50-60" id="ps2" className="text-blue-600" />
+                                <Label htmlFor="ps2" className="text-sm font-medium cursor-pointer">4 punti - 50-60</Label>
+                              </div>
+                            </RadioGroup>
+                          </div>
 
-                      {/* Dolore */}
-                      <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
-                        <Label className="text-sm font-medium text-gray-700">Dolore</Label>
-                        <RadioGroup
-                          value={formData.score.dolore}
-                          onValueChange={(value) => setFormData({
-                            ...formData, 
-                            score: {...formData.score, dolore: value}
-                          })}
-                          className="space-y-3"
-                        >
-                          <div className="flex items-center space-x-3 p-2 hover:bg-white rounded-md transition-colors">
-                            <RadioGroupItem value="3" id="dolore-3" className="text-blue-600" />
-                            <Label htmlFor="dolore-3" className="text-sm font-medium cursor-pointer">3 - Intenso</Label>
+                          {/* Sopravvivenza stimata */}
+                          <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
+                            <Label className="text-sm font-medium text-gray-700">Sopravvivenza stimata</Label>
+                            <RadioGroup
+                              value={formData.score.sopravvivenza}
+                              onValueChange={(value) => setFormData({
+                                ...formData, 
+                                score: {...formData.score, sopravvivenza: value}
+                              })}
+                              className="space-y-3"
+                            >
+                              <div className="flex items-center space-x-3 p-2 hover:bg-white rounded-md transition-colors">
+                                <RadioGroupItem value="≥ 12 mesi" id="surv1" className="text-blue-600" />
+                                <Label htmlFor="surv1" className="text-sm font-medium cursor-pointer">0 punti - ≥ 12 mesi</Label>
+                              </div>
+                              <div className="flex items-center space-x-3 p-2 hover:bg-white rounded-md transition-colors">
+                                <RadioGroupItem value="6-12 mesi" id="surv2" className="text-blue-600" />
+                                <Label htmlFor="surv2" className="text-sm font-medium cursor-pointer">1 punto - 6-12 mesi</Label>
+                              </div>
+                              <div className="flex items-center space-x-3 p-2 hover:bg-white rounded-md transition-colors">
+                                <RadioGroupItem value="≤ 6 mesi" id="surv3" className="text-blue-600" />
+                                <Label htmlFor="surv3" className="text-sm font-medium cursor-pointer">2 punti - ≤ 6 mesi</Label>
+                              </div>
+                            </RadioGroup>
                           </div>
-                          <div className="flex items-center space-x-3 p-2 hover:bg-white rounded-md transition-colors">
-                            <RadioGroupItem value="2" id="dolore-2" className="text-blue-600" />
-                            <Label htmlFor="dolore-2" className="text-sm font-medium cursor-pointer">2 - Moderato</Label>
-                          </div>
-                          <div className="flex items-center space-x-3 p-2 hover:bg-white rounded-md transition-colors">
-                            <RadioGroupItem value="1" id="dolore-1" className="text-blue-600" />
-                            <Label htmlFor="dolore-1" className="text-sm font-medium cursor-pointer">1 - Lieve</Label>
-                          </div>
-                        </RadioGroup>
-                      </div>
 
-                      {/* Comorbidità */}
-                      <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
-                        <Label className="text-sm font-medium text-gray-700">Comorbidità</Label>
-                        <RadioGroup
-                          value={formData.score.comorbidita}
-                          onValueChange={(value) => setFormData({
-                            ...formData, 
-                            score: {...formData.score, comorbidita: value}
-                          })}
-                          className="space-y-3"
-                        >
-                          <div className="flex items-center space-x-3 p-2 hover:bg-white rounded-md transition-colors">
-                            <RadioGroupItem value="3" id="comorbidita-3" className="text-blue-600" />
-                            <Label htmlFor="comorbidita-3" className="text-sm font-medium cursor-pointer">3 - Multiple</Label>
+                          {/* Sintomi (multi-select) */}
+                          <div className="space-y-4 p-4 bg-gray-50 rounded-lg col-span-2">
+                            <Label className="text-sm font-medium text-gray-700">Sintomi (anche associati)</Label>
+                            <div className="space-y-2">
+                              {["Dolore", "Dispnea", "Iporessia", "Calo Ponderale", "Ansia Depressione"].map((sintomo) => (
+                                <div key={sintomo} className="flex items-center space-x-3 p-2 hover:bg-white rounded-md transition-colors">
+                                  <input
+                                    type="checkbox"
+                                    checked={formData.score.sintomi.includes(sintomo)}
+                                    onChange={(e) => {
+                                      if (e.target.checked) {
+                                        setFormData({
+                                          ...formData,
+                                          score: {...formData.score, sintomi: [...formData.score.sintomi, sintomo]}
+                                        });
+                                      } else {
+                                        setFormData({
+                                          ...formData,
+                                          score: {...formData.score, sintomi: formData.score.sintomi.filter(s => s !== sintomo)}
+                                        });
+                                      }
+                                    }}
+                                    className="w-4 h-4 text-blue-600 rounded"
+                                  />
+                                  <Label className="text-sm font-medium cursor-pointer">
+                                    {sintomo} {sintomo === "Dolore" ? "(2 punti)" : "(1 punto)"}
+                                  </Label>
+                                </div>
+                              ))}
+                            </div>
                           </div>
-                          <div className="flex items-center space-x-3 p-2 hover:bg-white rounded-md transition-colors">
-                            <RadioGroupItem value="2" id="comorbidita-2" className="text-blue-600" />
-                            <Label htmlFor="comorbidita-2" className="text-sm font-medium cursor-pointer">2 - Moderate</Label>
-                          </div>
-                          <div className="flex items-center space-x-3 p-2 hover:bg-white rounded-md transition-colors">
-                            <RadioGroupItem value="1" id="comorbidita-1" className="text-blue-600" />
-                            <Label htmlFor="comorbidita-1" className="text-sm font-medium cursor-pointer">1 - Lieve</Label>
-                          </div>
-                        </RadioGroup>
-                      </div>
-                    </div>
 
-                    {/* Score totale */}
-                    <div className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                          {/* Trattamenti */}
+                          <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
+                            <Label className="text-sm font-medium text-gray-700">Trattamenti con impatto sulla sopravvivenza</Label>
+                            <RadioGroup
+                              value={formData.score.trattamenti}
+                              onValueChange={(value) => setFormData({
+                                ...formData, 
+                                score: {...formData.score, trattamenti: value}
+                              })}
+                              className="space-y-3"
+                            >
+                              <div className="flex items-center space-x-3 p-2 hover:bg-white rounded-md transition-colors">
+                                <RadioGroupItem value="si" id="tratt1" className="text-blue-600" />
+                                <Label htmlFor="tratt1" className="text-sm font-medium cursor-pointer">0 punti - Si</Label>
+                              </div>
+                              <div className="flex items-center space-x-3 p-2 hover:bg-white rounded-md transition-colors">
+                                <RadioGroupItem value="No" id="tratt2" className="text-blue-600" />
+                                <Label htmlFor="tratt2" className="text-sm font-medium cursor-pointer">2 punti - No</Label>
+                              </div>
+                            </RadioGroup>
+                          </div>
+
+                          {/* Tossicità attesa */}
+                          <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
+                            <Label className="text-sm font-medium text-gray-700">Tossicità attesa (anche associate)</Label>
+                            <RadioGroup
+                              value={formData.score.tossicita}
+                              onValueChange={(value) => setFormData({
+                                ...formData, 
+                                score: {...formData.score, tossicita: value}
+                              })}
+                              className="space-y-3"
+                            >
+                              <div className="flex items-center space-x-3 p-2 hover:bg-white rounded-md transition-colors">
+                                <RadioGroupItem value="Nessuna" id="tox1" className="text-blue-600" />
+                                <Label htmlFor="tox1" className="text-sm font-medium cursor-pointer">0 punti - Nessuna</Label>
+                              </div>
+                              <div className="flex items-center space-x-3 p-2 hover:bg-white rounded-md transition-colors">
+                                <RadioGroupItem value="Ematologica" id="tox2" className="text-blue-600" />
+                                <Label htmlFor="tox2" className="text-sm font-medium cursor-pointer">1 punto - Ematologica</Label>
+                              </div>
+                              <div className="flex items-center space-x-3 p-2 hover:bg-white rounded-md transition-colors">
+                                <RadioGroupItem value="Mucosite" id="tox3" className="text-blue-600" />
+                                <Label htmlFor="tox3" className="text-sm font-medium cursor-pointer">1 punto - Mucosite (cavo orale e/o G.I)</Label>
+                              </div>
+                              <div className="flex items-center space-x-3 p-2 hover:bg-white rounded-md transition-colors">
+                                <RadioGroupItem value="Altro" id="tox4" className="text-blue-600" />
+                                <Label htmlFor="tox4" className="text-sm font-medium cursor-pointer">1 punto - Altro</Label>
+                              </div>
+                            </RadioGroup>
+                          </div>
+
+                          {/* Problemi socio-assistenziali */}
+                          <div className="space-y-4 p-4 bg-gray-50 rounded-lg col-span-2">
+                            <Label className="text-sm font-medium text-gray-700">Problemi socio-assistenziali (anche associati)</Label>
+                            <RadioGroup
+                              value={formData.score.problemiSocio}
+                              onValueChange={(value) => setFormData({
+                                ...formData, 
+                                score: {...formData.score, problemiSocio: value}
+                              })}
+                              className="space-y-3"
+                            >
+                              <div className="flex items-center space-x-3 p-2 hover:bg-white rounded-md transition-colors">
+                                <RadioGroupItem value="Nessuno" id="soc1" className="text-blue-600" />
+                                <Label htmlFor="soc1" className="text-sm font-medium cursor-pointer">0 punti - Nessuno</Label>
+                              </div>
+                              <div className="flex items-center space-x-3 p-2 hover:bg-white rounded-md transition-colors">
+                                <RadioGroupItem value="Rete famigliare scarsa" id="soc2" className="text-blue-600" />
+                                <Label htmlFor="soc2" className="text-sm font-medium cursor-pointer">1 punto - Rete familiare scarsa o assente</Label>
+                              </div>
+                              <div className="flex items-center space-x-3 p-2 hover:bg-white rounded-md transition-colors">
+                                <RadioGroupItem value="Inadeguato supporto" id="soc3" className="text-blue-600" />
+                                <Label htmlFor="soc3" className="text-sm font-medium cursor-pointer">2 punti - Inadeguato supporto da parte del caregiver</Label>
+                              </div>
+                              <div className="flex items-center space-x-3 p-2 hover:bg-white rounded-md transition-colors">
+                                <RadioGroupItem value="Limitazioni assistenziali" id="soc4" className="text-blue-600" />
+                                <Label htmlFor="soc4" className="text-sm font-medium cursor-pointer">1 punto - Presenza di limitazioni assistenziali</Label>
+                              </div>
+                            </RadioGroup>
+                          </div>
+                        </div>
+                        </div>
+                      )}
+                      
+                      {formData.ambulatorio !== "Cure Simultanee" && (
+                        /* Vecchio score per altri ambulatori */
+                        <div className="grid md:grid-cols-3 gap-6">
+                          <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
+                            <Label className="text-sm font-medium text-gray-700">Tosse</Label>
+                            <RadioGroup
+                              value={formData.score.tosse}
+                              onValueChange={(value) => setFormData({
+                                ...formData, 
+                                score: {...formData.score, tosse: value}
+                              })}
+                              className="space-y-3"
+                            >
+                              <div className="flex items-center space-x-3 p-2 hover:bg-white rounded-md transition-colors">
+                                <RadioGroupItem value="3" id="tosse-3" className="text-blue-600" />
+                                <Label htmlFor="tosse-3" className="text-sm font-medium cursor-pointer">3 - Grave</Label>
+                              </div>
+                              <div className="flex items-center space-x-3 p-2 hover:bg-white rounded-md transition-colors">
+                                <RadioGroupItem value="2" id="tosse-2" className="text-blue-600" />
+                                <Label htmlFor="tosse-2" className="text-sm font-medium cursor-pointer">2 - Moderata</Label>
+                              </div>
+                              <div className="flex items-center space-x-3 p-2 hover:bg-white rounded-md transition-colors">
+                                <RadioGroupItem value="1" id="tosse-1" className="text-blue-600" />
+                                <Label htmlFor="tosse-1" className="text-sm font-medium cursor-pointer">1 - Lieve</Label>
+                              </div>
+                            </RadioGroup>
+                          </div>
+
+                          <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
+                            <Label className="text-sm font-medium text-gray-700">Dolore</Label>
+                            <RadioGroup
+                              value={formData.score.dolore}
+                              onValueChange={(value) => setFormData({
+                                ...formData, 
+                                score: {...formData.score, dolore: value}
+                              })}
+                              className="space-y-3"
+                            >
+                              <div className="flex items-center space-x-3 p-2 hover:bg-white rounded-md transition-colors">
+                                <RadioGroupItem value="3" id="dolore-3" className="text-blue-600" />
+                                <Label htmlFor="dolore-3" className="text-sm font-medium cursor-pointer">3 - Intenso</Label>
+                              </div>
+                              <div className="flex items-center space-x-3 p-2 hover:bg-white rounded-md transition-colors">
+                                <RadioGroupItem value="2" id="dolore-2" className="text-blue-600" />
+                                <Label htmlFor="dolore-2" className="text-sm font-medium cursor-pointer">2 - Moderato</Label>
+                              </div>
+                              <div className="flex items-center space-x-3 p-2 hover:bg-white rounded-md transition-colors">
+                                <RadioGroupItem value="1" id="dolore-1" className="text-blue-600" />
+                                <Label htmlFor="dolore-1" className="text-sm font-medium cursor-pointer">1 - Lieve</Label>
+                              </div>
+                            </RadioGroup>
+                          </div>
+
+                          <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
+                            <Label className="text-sm font-medium text-gray-700">Comorbidità</Label>
+                            <RadioGroup
+                              value={formData.score.comorbidita}
+                              onValueChange={(value) => setFormData({
+                                ...formData, 
+                                score: {...formData.score, comorbidita: value}
+                              })}
+                              className="space-y-3"
+                            >
+                              <div className="flex items-center space-x-3 p-2 hover:bg-white rounded-md transition-colors">
+                                <RadioGroupItem value="3" id="comorbidita-3" className="text-blue-600" />
+                                <Label htmlFor="comorbidita-3" className="text-sm font-medium cursor-pointer">3 - Multiple</Label>
+                              </div>
+                              <div className="flex items-center space-x-3 p-2 hover:bg-white rounded-md transition-colors">
+                                <RadioGroupItem value="2" id="comorbidita-2" className="text-blue-600" />
+                                <Label htmlFor="comorbidita-2" className="text-sm font-medium cursor-pointer">2 - Moderate</Label>
+                              </div>
+                              <div className="flex items-center space-x-3 p-2 hover:bg-white rounded-md transition-colors">
+                                <RadioGroupItem value="1" id="comorbidita-1" className="text-blue-600" />
+                                <Label htmlFor="comorbidita-1" className="text-sm font-medium cursor-pointer">1 - Lieve</Label>
+                              </div>
+                            </RadioGroup>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Score totale */}
+                      <div className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
@@ -418,8 +634,9 @@ const OncologoPage = () => {
                           {calculateScore()}
                         </Badge>
                       </div>
-                    </div>
-                  </div>
+                      </div>
+                    </>
+                  )}
 
                   <div className="pt-4">
                     <Button type="submit" className="w-full h-12 text-lg font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg">
@@ -446,7 +663,7 @@ const OncologoPage = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {notifications.filter(n => !n.letto).map((notification) => (
+                  {notifications.filter(n => !n.letto && !n.archiviata).map((notification) => (
                     <div
                       key={notification.id}
                       className={`p-3 rounded-lg border ${

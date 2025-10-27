@@ -2,16 +2,24 @@ import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { ArrowLeft, BarChart3, PieChart, TrendingUp, Users, Clock, AlertCircle, Maximize2, X } from "lucide-react";
-import CaseManagerNavbar from "@/oncologico/components/CaseManagerNavbar";
+import CaseManagerNavbar from "@/oncologico/components/layout/CaseManagerNavbar";
 import { useNavigate } from "react-router-dom";
 
 // Mock data per i grafici
 const mockBubbleData = [
-  { x: 0.2, y: "Pronto per GOM", size: 15, label: "15 pazienti" },
-  { x: 3.5, y: "Attesa prescrizione", size: 7, label: "7 pazienti" },
-  { x: 5, y: "Attesa esami", size: 2, label: "2 pazienti" },
-  { x: 9.8, y: "Attesa esenzione", size: 5, label: "5 pazienti" }
+  { x: 0.2, y: "Pronto per GOM", size: 15, label: "15 pazienti", color: "green" },
+  { x: 3.5, y: "Attesa prescrizione", size: 7, label: "7 pazienti", color: "yellow" },
+  { x: 5, y: "Attesa esami", size: 2, label: "2 pazienti", color: "orange" },
+  { x: 9.8, y: "Attesa esenzione", size: 5, label: "5 pazienti", color: "red" }
 ];
+
+// Mappatura colori per le bolle
+const bubbleColors: Record<string, { bg: string; hover: string; text: string }> = {
+  green: { bg: "bg-gradient-to-br from-green-500 to-green-600", hover: "hover:from-green-600 hover:to-green-700", text: "text-white" },
+  yellow: { bg: "bg-gradient-to-br from-yellow-500 to-yellow-600", hover: "hover:from-yellow-600 hover:to-yellow-700", text: "text-white" },
+  orange: { bg: "bg-gradient-to-br from-orange-500 to-orange-600", hover: "hover:from-orange-600 hover:to-orange-700", text: "text-white" },
+  red: { bg: "bg-gradient-to-br from-red-500 to-red-600", hover: "hover:from-red-600 hover:to-red-700", text: "text-white" }
+};
 
 const mockBarData = [
   { 
@@ -64,8 +72,9 @@ const CaseManagerDashboard = () => {
   const [expandedChart, setExpandedChart] = useState<"bubble" | "bar" | null>(null);
   const [hoveredBar, setHoveredBar] = useState<{week: string, category: string, value: number, x: number, y: number} | null>(null);
   const [hoveredWeek, setHoveredWeek] = useState<{week: string, data: WeekData, x: number, y: number} | null>(null);
+  const [hoveredBubble, setHoveredBubble] = useState<{label: string, value: number, x: number, y: number} | null>(null);
 
-  const renderBubbleChart = () => (
+  const renderBubbleChart = (isExpanded: boolean = false) => (
     <div className="space-y-4">
        <div className="flex items-center justify-between mb-4">
          <div className="text-center flex-1">
@@ -84,17 +93,31 @@ const CaseManagerDashboard = () => {
        </div>
       
        {/* Chart Container */}
-       <div className="relative bg-white border rounded-lg p-3 pb-6 h-80">
-        {/* Y-axis labels */}
-        <div className="absolute left-0 top-6 bottom-6 w-20 sm:w-24 md:w-32 flex flex-col justify-between">
-          <div className="text-xs sm:text-sm font-medium text-right pr-1 sm:pr-2">Pronto per GOM</div>
-          <div className="text-xs sm:text-sm font-medium text-right pr-1 sm:pr-2">Attesa prescrizione</div>
-          <div className="text-xs sm:text-sm font-medium text-right pr-1 sm:pr-2">Attesa esenzione</div>
-          <div className="text-xs sm:text-sm font-medium text-right pr-1 sm:pr-2">Attesa esami</div>
+       <div className={`relative bg-white border rounded-lg p-3 pb-6 ${isExpanded ? 'h-[600px]' : 'h-[500px]'}`}>
+        {/* Legend - Top */}
+        <div className="flex flex-wrap justify-center gap-3 sm:gap-4 bg-gradient-to-r from-blue-50 to-purple-50 px-3 py-2 rounded-lg shadow-sm border border-blue-200 mb-4">
+          {mockBubbleData.map((item, index) => {
+            const colors = bubbleColors[item.color];
+            return (
+              <div key={index} className="flex items-center gap-2 text-xs sm:text-sm">
+                <div className={`w-4 h-4 rounded-full ${colors.bg} shadow-md`} />
+                <span className="font-medium text-gray-700">{item.y}:</span>
+                <span className="font-bold text-gray-900">{item.size}</span>
+              </div>
+            );
+          })}
         </div>
         
-        {/* Chart Area */}
-        <div className="ml-20 sm:ml-24 md:ml-32 mr-2 sm:mr-4 md:mr-8 h-full relative">
+        {/* Y-axis labels */}
+        <div className="absolute left-0 top-16 bottom-8 w-28 sm:w-32 md:w-40 flex flex-col justify-between">
+          <div className="text-sm sm:text-base font-medium text-right pr-2 sm:pr-3">Pronto per GOM</div>
+          <div className="text-sm sm:text-base font-medium text-right pr-2 sm:pr-3">Attesa prescrizione</div>
+          <div className="text-sm sm:text-base font-medium text-right pr-2 sm:pr-3">Attesa esenzione</div>
+          <div className="text-sm sm:text-base font-medium text-right pr-2 sm:pr-3">Attesa esami</div>
+        </div>
+        
+        {/* Chart Area with padding for labels */}
+        <div className="ml-28 sm:ml-32 md:ml-40 mr-4 sm:mr-8 md:mr-12 mt-4 mb-12 relative" style={{ height: 'calc(100% - 80px)' }}>
           {/* Grid lines */}
           <div className="absolute inset-0">
             {/* Vertical grid lines */}
@@ -116,17 +139,17 @@ const CaseManagerDashboard = () => {
           </div>
           
           {/* X-axis */}
-          <div className="absolute bottom-0 left-0 right-0 flex justify-between text-xs text-gray-600">
-            <span className="text-xs sm:text-sm">0</span>
-            <span className="text-xs sm:text-sm">2</span>
-            <span className="text-xs sm:text-sm">4</span>
-            <span className="text-xs sm:text-sm">6</span>
-            <span className="text-xs sm:text-sm">8</span>
-            <span className="text-xs sm:text-sm">10</span>
+          <div className="absolute bottom-8 left-0 right-0 flex justify-between text-sm text-gray-600 px-3">
+            <span className="text-sm sm:text-base">0</span>
+            <span className="text-sm sm:text-base">2</span>
+            <span className="text-sm sm:text-base">4</span>
+            <span className="text-sm sm:text-base">6</span>
+            <span className="text-sm sm:text-base">8</span>
+            <span className="text-sm sm:text-base">10</span>
           </div>
           
            {/* X-axis label */}
-           <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-6 sm:translate-y-8 text-xs sm:text-sm font-medium text-gray-700">
+           <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-2 text-sm sm:text-base font-medium text-gray-700">
              Giorni alla scadenza
            </div>
           
@@ -139,25 +162,57 @@ const CaseManagerDashboard = () => {
               "Attesa esami": 3
             };
             
-            const bubbleSize = Math.max(20, item.size * 1.5);
-            const xPos = (item.x / 10) * 100;
-            const yPos = (yPositions[item.y as keyof typeof yPositions] / 3) * 100;
+            // Calcola dimensioni basate su scala per differenziazione visiva
+            const maxSize = isExpanded ? 160 : 110;
+            const minSize = isExpanded ? 60 : 45;
+            const bubbleSize = minSize + ((item.size / 15) * (maxSize - minSize));
+            const xPos = 5 + (item.x / 10) * 90; // 5% margin left, 5% margin right
+            const yPos = 3 + (yPositions[item.y as keyof typeof yPositions] / 3) * 90; // 3% margin top, 7% margin bottom
+            const colors = bubbleColors[item.color];
             
             return (
               <div
                 key={index}
-                className="absolute transform -translate-x-1/2 -translate-y-1/2 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold text-xs sm:text-sm"
+                className={`absolute transform -translate-x-1/2 -translate-y-1/2 ${colors.bg} ${colors.hover} rounded-full flex items-center justify-center ${colors.text} font-bold shadow-xl transition-all duration-300 cursor-pointer z-10 border-2 border-white/30`}
                 style={{
                   left: `${xPos}%`,
                   top: `${yPos}%`,
                   width: `${bubbleSize}px`,
-                  height: `${bubbleSize}px`
+                  height: `${bubbleSize}px`,
+                  fontSize: `${Math.min(bubbleSize * 0.32, isExpanded ? 26 : 18)}px`,
+                  filter: 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.06))'
                 }}
+                onMouseEnter={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  setHoveredBubble({
+                    label: item.y,
+                    value: item.size,
+                    x: rect.left + rect.width / 2,
+                    y: rect.top - 10
+                  });
+                }}
+                onMouseLeave={() => setHoveredBubble(null)}
               >
                 {item.size}
               </div>
             );
           })}
+          
+          {/* Tooltip per bolle */}
+          {hoveredBubble && (
+            <div 
+              className="fixed bg-gray-900 text-white px-4 py-3 rounded-lg shadow-2xl text-sm z-50 pointer-events-none border border-gray-700"
+              style={{
+                left: `${hoveredBubble.x}px`,
+                top: `${hoveredBubble.y}px`,
+                transform: 'translateX(-50%) translateY(-100%)'
+              }}
+            >
+              <div className="font-semibold text-base mb-1">{hoveredBubble.label}</div>
+              <div className="text-gray-300 text-xs">Giorni alla scadenza: ~{(mockBubbleData.find(b => b.y === hoveredBubble.label)?.x || 0).toFixed(1)}</div>
+              <div className="text-green-400 font-bold text-lg mt-1">{hoveredBubble.value} pazienti</div>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -526,7 +581,7 @@ const CaseManagerDashboard = () => {
         {/* Chart Display */}
         <Card>
           <CardContent className="p-3">
-            {viewType === "bubble" ? renderBubbleChart() : renderBarChart()}
+            {viewType === "bubble" ? renderBubbleChart(false) : renderBarChart()}
           </CardContent>
         </Card>
 
@@ -547,7 +602,7 @@ const CaseManagerDashboard = () => {
                 </Button>
               </div>
               <div className="p-2 sm:p-4 md:p-6">
-                {expandedChart === "bubble" ? renderBubbleChart() : renderBarChart()}
+                {expandedChart === "bubble" ? renderBubbleChart(true) : renderBarChart()}
               </div>
             </div>
           </div>
