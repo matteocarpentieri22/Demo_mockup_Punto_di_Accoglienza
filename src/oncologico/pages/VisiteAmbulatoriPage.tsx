@@ -5,12 +5,21 @@ import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { Badge } from "@/shared/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/shared/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/shared/components/ui/dropdown-menu";
-import { ArrowLeft, Calendar, Clock, CheckCircle, AlertCircle, Download, Filter, Plus, Lock, Unlock, MessageSquare, Stethoscope, FileSpreadsheet, FileText, ChevronDown } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, CheckCircle, AlertCircle, Download, Filter, Plus, Lock, Unlock, MessageSquare, Stethoscope, FileSpreadsheet, FileText, ChevronDown, Users } from "lucide-react";
 import CaseManagerNavbar from "@/oncologico/components/layout/CaseManagerNavbar";
 import { useNavigate } from "react-router-dom";
 import { exportToExcel, exportToPDF, formatDateForFilename } from "@/oncologico/utils/export";
+
+interface DailyData {
+  [ambulatorio: string]: SlotData[];
+}
+
+interface CalendarData {
+  [date: string]: DailyData;
+}
 
 type SlotData = {
   ora: string;
@@ -35,8 +44,13 @@ type SlotData = {
 
 const VisiteAmbulatoriPage = () => {
   const navigate = useNavigate();
-  const [selectedDate, setSelectedDate] = useState("2024-01-15");
-  const [selectedAmbulatorio, setSelectedAmbulatorio] = useState("tutti");
+  // Date selezionate per ogni ambulatorio
+  const [selectedDates, setSelectedDates] = useState({
+    "Cure Simultanee": "2024-01-15",
+    "Oncogeriatria": "2024-01-15",
+    "Osteoncologia": "2024-01-16"
+  });
+  const [activeTab, setActiveTab] = useState("cure-simultanee");
   const [showBlockSlotDialog, setShowBlockSlotDialog] = useState(false);
   const [blockSlotData, setBlockSlotData] = useState({
     ambulatorio: "",
@@ -49,7 +63,7 @@ const VisiteAmbulatoriPage = () => {
   });
 
   // Mock data calendario ambulatori
-  const [calendarData] = useState({
+  const [calendarData] = useState<CalendarData>({
     "2024-01-15": {
       "Cure Simultanee": [
         { ora: "09:00", paziente: "Mario Rossi", tipo: "Visita", medico: "Dr. Bianchi", stato: "confermata", cf: "RSSMRA80A01H501U", problemi: "Dolore diffuso e dispnea" },
@@ -126,14 +140,29 @@ const VisiteAmbulatoriPage = () => {
   };
 
 
-  const handleExportDay = () => {
-    const dailyData = calendarData[selectedDate as keyof typeof calendarData] || {};
+  // Funzione per ottenere la data selezionata per un ambulatorio
+  const getSelectedDateForAmbulatorio = (ambulatorio: string): string => {
+    return selectedDates[ambulatorio as keyof typeof selectedDates] || "2024-01-15";
+  };
+
+  // Funzione per ottenere i dati filtrati per un ambulatorio specifico
+  const getFilteredDataForAmbulatorio = (ambulatorio: string): DailyData => {
+    const date = getSelectedDateForAmbulatorio(ambulatorio);
+    const dailyData = calendarData[date] || {};
+    return { [ambulatorio]: dailyData[ambulatorio] || [] };
+  };
+
+  const handleExportDay = (ambulatorio?: string) => {
+    const date = ambulatorio ? getSelectedDateForAmbulatorio(ambulatorio) : selectedDates["Cure Simultanee"];
+    const dailyData = ambulatorio 
+      ? getFilteredDataForAmbulatorio(ambulatorio)
+      : calendarData[date] || {};
     const reportContent = [
-      `Riepilogo Giornaliero Ambulatori - ${selectedDate}`,
+      `Riepilogo Giornaliero ${ambulatorio || 'Ambulatori'} - ${date}`,
       "",
-      ...Object.entries(dailyData).map(([ambulatorio, slots]) => [
-        `\n${ambulatorio}:`,
-        ...(slots as Array<{ora: string; paziente?: string; tipo: string; medico?: string; stato: string; cf?: string}>).map(slot => `  ${slot.ora} - ${slot.paziente || "Slot Libero"} - ${slot.tipo} - ${slot.medico || "N/A"} - ${slot.stato}`)
+      ...Object.entries(dailyData).map(([amb, slots]) => [
+        `\n${amb}:`,
+        ...slots.map(slot => `  ${slot.ora} - ${slot.paziente || "Slot Libero"} - ${slot.tipo} - ${slot.medico || "N/A"} - ${slot.stato}`)
       ]).flat()
     ].join("\n");
 
@@ -141,20 +170,20 @@ const VisiteAmbulatoriPage = () => {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `riepilogo_ambulatori_${selectedDate}.txt`;
+    a.download = `riepilogo_${ambulatorio ? ambulatorio.toLowerCase().replace(/ /g, '_') : 'ambulatori'}_${date}.txt`;
     a.click();
     window.URL.revokeObjectURL(url);
   };
 
   // Ottieni i dati delle visite per l'export (opzionale filtro per ambulatorio specifico)
   const getVisitsData = (ambulatorioFiltro?: string) => {
-    const dailyData = calendarData[selectedDate as keyof typeof calendarData] || {};
-    const dataToUse = ambulatorioFiltro 
-      ? { [ambulatorioFiltro]: dailyData[ambulatorioFiltro as keyof typeof dailyData] }
-      : dailyData;
+    const date = ambulatorioFiltro ? getSelectedDateForAmbulatorio(ambulatorioFiltro) : selectedDates["Cure Simultanee"];
+    const dailyData = ambulatorioFiltro 
+      ? getFilteredDataForAmbulatorio(ambulatorioFiltro)
+      : calendarData[date] || {};
     
-    return Object.entries(dataToUse).flatMap(([ambulatorio, slots]) =>
-      (slots as Array<SlotData>).filter(slot => slot.paziente && slot.stato === "confermata").map(slot => ({
+    return Object.entries(dailyData).flatMap(([ambulatorio, slots]) =>
+      slots.filter(slot => slot.paziente && slot.stato === "confermata").map(slot => ({
         ambulatorio,
         ora: slot.ora,
         paziente: slot.paziente || '',
@@ -168,9 +197,10 @@ const VisiteAmbulatoriPage = () => {
 
   const handleExportCSV = (ambulatorioSpecifico?: string) => {
     const visits = getVisitsData(ambulatorioSpecifico);
+    const date = ambulatorioSpecifico ? getSelectedDateForAmbulatorio(ambulatorioSpecifico) : selectedDates["Cure Simultanee"];
     const filename = ambulatorioSpecifico 
-      ? `visite_${ambulatorioSpecifico.toLowerCase().replace(/ /g, '_')}_${formatDateForFilename(selectedDate)}`
-      : `visite_ambulatori_${formatDateForFilename(selectedDate)}`;
+      ? `visite_${ambulatorioSpecifico.toLowerCase().replace(/ /g, '_')}_${formatDateForFilename(date)}`
+      : `visite_ambulatori_${formatDateForFilename(date)}`;
     
     const csvContent = [
       ["Ambulatorio", "Ora", "Paziente", "Tipo", "Medico", "CF", "Stato"],
@@ -196,13 +226,14 @@ const VisiteAmbulatoriPage = () => {
 
   const handleExportExcel = (ambulatorioSpecifico?: string) => {
     const visits = getVisitsData(ambulatorioSpecifico);
+    const date = ambulatorioSpecifico ? getSelectedDateForAmbulatorio(ambulatorioSpecifico) : selectedDates["Cure Simultanee"];
     const filename = ambulatorioSpecifico 
-      ? `visite_${ambulatorioSpecifico.toLowerCase().replace(/ /g, '_')}_${formatDateForFilename(selectedDate)}`
-      : `visite_ambulatori_${formatDateForFilename(selectedDate)}`;
+      ? `visite_${ambulatorioSpecifico.toLowerCase().replace(/ /g, '_')}_${formatDateForFilename(date)}`
+      : `visite_ambulatori_${formatDateForFilename(date)}`;
     
     const title = ambulatorioSpecifico
-      ? `Visite ${ambulatorioSpecifico} - ${selectedDate}`
-      : `Visite Ambulatori - ${selectedDate}`;
+      ? `Visite ${ambulatorioSpecifico} - ${date}`
+      : `Visite Ambulatori - ${date}`;
     
     const columns = [
       { header: "Ambulatorio", key: "ambulatorio" },
@@ -224,13 +255,14 @@ const VisiteAmbulatoriPage = () => {
 
   const handleExportPDF = (ambulatorioSpecifico?: string) => {
     const visits = getVisitsData(ambulatorioSpecifico);
+    const date = ambulatorioSpecifico ? getSelectedDateForAmbulatorio(ambulatorioSpecifico) : selectedDates["Cure Simultanee"];
     const filename = ambulatorioSpecifico 
-      ? `visite_${ambulatorioSpecifico.toLowerCase().replace(/ /g, '_')}_${formatDateForFilename(selectedDate)}`
-      : `visite_ambulatori_${formatDateForFilename(selectedDate)}`;
+      ? `visite_${ambulatorioSpecifico.toLowerCase().replace(/ /g, '_')}_${formatDateForFilename(date)}`
+      : `visite_ambulatori_${formatDateForFilename(date)}`;
     
     const subtitle = ambulatorioSpecifico
-      ? `${ambulatorioSpecifico} - Data: ${selectedDate}`
-      : `Data: ${selectedDate}`;
+      ? `${ambulatorioSpecifico} - Data: ${date}`
+      : `Data: ${date}`;
     
     const columns = [
       { header: "Ambulatorio", key: "ambulatorio", width: 20 },
@@ -296,9 +328,134 @@ const VisiteAmbulatoriPage = () => {
     ];
   };
 
-  const filteredData = selectedAmbulatorio === "tutti" 
-    ? calendarData[selectedDate as keyof typeof calendarData] || {}
-    : { [selectedAmbulatorio]: calendarData[selectedDate as keyof typeof calendarData]?.[selectedAmbulatorio] || [] };
+  // Ottieni i dati per l'ambulatorio attivo
+  const getActiveAmbulatorio = () => {
+    switch (activeTab) {
+      case "cure-simultanee":
+        return "Cure Simultanee";
+      case "oncogeriatria":
+        return "Oncogeriatria";
+      case "osteoncologia":
+        return "Osteoncologia";
+      default:
+        return "Cure Simultanee";
+    }
+  };
+
+  // Funzione helper per renderizzare il contenuto degli slot
+  const renderSlotContent = (ambulatorio: string, slots: SlotData[]) => {
+    const visiteSlots = slots.filter(s => s.tipo !== 'Discussione');
+    const discussioniSlots = ambulatorio === 'Osteoncologia' ? slots.filter(s => s.tipo === 'Discussione') : [];
+    return (
+      <div className="space-y-6">
+        <div>
+          <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2"><Stethoscope className="w-4 h-4 text-green-600" />Visite</h4>
+          <div className="space-y-3">
+            {visiteSlots.map((slot, index) => (
+              <div key={`v-${index}`} className={`p-3 rounded-lg border ${getStatusColor(slot.stato)} bg-green-50 border-l-4 border-l-green-500`}>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    {getStatusIcon(slot.stato)}
+                    <span className="font-medium">{slot.ora}</span>
+                  </div>
+                  {slot.stato === 'libero' && (
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => {
+                        setBlockSlotData({
+                          ...blockSlotData,
+                          ambulatorio: ambulatorio,
+                          ora: slot.ora
+                        });
+                        setShowBlockSlotDialog(true);
+                      }}
+                    >
+                      <Lock className="w-3 h-3 mr-1" />
+                      Blocca
+                    </Button>
+                  )}
+                </div>
+                {slot.paziente ? (
+                  <div className="space-y-1 text-sm">
+                    <p className="text-base font-bold text-gray-900 mb-2 border-b border-gray-200 pb-1">{slot.paziente}</p>
+                    {ambulatorio === "Cure Simultanee" && slot.problemi && (
+                      <p><strong>Problemi:</strong> {slot.problemi}</p>
+                    )}
+                    {ambulatorio === "Oncogeriatria" && (
+                      <>
+                        {slot.neoplasia && <p><strong>Neoplasia:</strong> {slot.neoplasia}</p>}
+                        {slot.stadio && <p><strong>Stadio:</strong> {slot.stadio}</p>}
+                        {slot.finalitaTrattamento && <p><strong>Finalità trattamento:</strong> {slot.finalitaTrattamento}</p>}
+                        {slot.ecogPS && <p><strong>ECOG PS:</strong> {slot.ecogPS}</p>}
+                        {slot.punteggioG8 && <p><strong>Punteggio G8:</strong> {slot.punteggioG8}</p>}
+                        {slot.esitoVGM && <p><strong>Esito VGM:</strong> {slot.esitoVGM}</p>}
+                        {slot.quesitoGeriatra && <p><strong>Quesito per geriatra:</strong> {slot.quesitoGeriatra}</p>}
+                      </>
+                    )}
+                    {ambulatorio === "Osteoncologia" && (
+                      <>
+                        {slot.problemi && <p><strong>Problemi:</strong> {slot.problemi}</p>}
+                        {slot.quesito && <p><strong>Quesito:</strong> {slot.quesito}</p>}
+                      </>
+                    )}
+                    <p><strong>Medico Referente:</strong> {slot.medico}</p>
+                  </div>
+                ) : (
+                  <div className="text-sm text-muted-foreground">Slot disponibile per nuova prenotazione</div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {discussioniSlots.length > 0 && (
+          <div>
+            <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2"><MessageSquare className="w-4 h-4 text-blue-600" />Discussioni</h4>
+            <div className="space-y-3">
+              {discussioniSlots.map((slot, index) => (
+                <div key={`d-${index}`} className={`p-3 rounded-lg border bg-blue-50 ${getStatusBorderOnly(slot.stato)} border-l-4 border-l-blue-500`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      {getStatusIcon(slot.stato)}
+                      <Badge variant="outline" className="bg-blue-50 border-blue-200 text-blue-700">Discussione</Badge>
+                    </div>
+                  </div>
+                  <div className="space-y-1 text-sm">
+                    <p className="text-base font-bold text-blue-900 mb-2 border-b border-blue-200 pb-1">{slot.paziente}</p>
+                    {ambulatorio === "Cure Simultanee" && slot.problemi && (
+                      <p><strong>Problemi:</strong> {slot.problemi}</p>
+                    )}
+                    {ambulatorio === "Oncogeriatria" && (
+                      <>
+                        {slot.neoplasia && <p><strong>Neoplasia:</strong> {slot.neoplasia}</p>}
+                        {slot.stadio && <p><strong>Stadio:</strong> {slot.stadio}</p>}
+                        {slot.finalitaTrattamento && <p><strong>Finalità trattamento:</strong> {slot.finalitaTrattamento}</p>}
+                        {slot.ecogPS && <p><strong>ECOG PS:</strong> {slot.ecogPS}</p>}
+                        {slot.punteggioG8 && <p><strong>Punteggio G8:</strong> {slot.punteggioG8}</p>}
+                        {slot.esitoVGM && <p><strong>Esito VGM:</strong> {slot.esitoVGM}</p>}
+                        {slot.quesitoGeriatra && <p><strong>Quesito per geriatra:</strong> {slot.quesitoGeriatra}</p>}
+                      </>
+                    )}
+                    {ambulatorio === "Osteoncologia" && (
+                      <>
+                        {slot.problemi && <p><strong>Problemi:</strong> {slot.problemi}</p>}
+                        {slot.quesito && <p><strong>Quesito:</strong> {slot.quesito}</p>}
+                      </>
+                    )}
+                    <p><strong>Medico Referente:</strong> {slot.medico}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const activeAmbulatorio = getActiveAmbulatorio();
+  const filteredData = getFilteredDataForAmbulatorio(activeAmbulatorio);
 
   return (
     <div className="min-h-screen bg-background">
@@ -319,42 +476,83 @@ const VisiteAmbulatoriPage = () => {
           </div>
         </div>
 
-        {/* Filtri */}
-        <Card className="mb-6">
-          <CardContent className="p-4">
-            <div className="flex flex-wrap items-center gap-4">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
-                <Label htmlFor="date">Data:</Label>
-                <Input
-                  id="date"
-                  type="date"
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  className="w-48"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <Filter className="w-4 h-4" />
-                <Label>Ambulatorio:</Label>
-                <Select value={selectedAmbulatorio} onValueChange={setSelectedAmbulatorio}>
-                  <SelectTrigger className="w-48">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="tutti">Tutti gli Ambulatori</SelectItem>
-                    {ambulatori.map((amb) => (
-                      <SelectItem key={amb} value={amb}>{amb}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              {/* Pulsante Blocco Slot */}
-              <div className="flex items-center gap-2">
-                <Dialog open={showBlockSlotDialog} onOpenChange={setShowBlockSlotDialog}>
+        {/* Tabs per Ambulatori */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6 mb-6">
+          <TabsList className="grid w-full grid-cols-3 h-auto p-1 bg-gray-100 border-2 border-gray-200 rounded-lg">
+            <TabsTrigger 
+              value="cure-simultanee" 
+              className="flex items-center justify-center gap-2 py-4 px-6 text-base font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all rounded-md"
+            >
+              <Users className="w-5 h-5" />
+              Cure Simultanee
+              <Badge 
+                variant="secondary" 
+                className="ml-2 px-3 py-1 text-sm font-bold bg-white text-gray-700 border border-gray-300"
+              >
+                {(calendarData[selectedDates["Cure Simultanee"]]?.["Cure Simultanee"] || []).length}
+              </Badge>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="oncogeriatria" 
+              className="flex items-center justify-center gap-2 py-4 px-6 text-base font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all rounded-md"
+            >
+              <Users className="w-5 h-5" />
+              Oncogeriatria
+              <Badge 
+                variant="secondary" 
+                className="ml-2 px-3 py-1 text-sm font-bold bg-white text-gray-700 border border-gray-300"
+              >
+                {(calendarData[selectedDates["Oncogeriatria"]]?.["Oncogeriatria"] || []).length}
+              </Badge>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="osteoncologia" 
+              className="flex items-center justify-center gap-2 py-4 px-6 text-base font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all rounded-md"
+            >
+              <Users className="w-5 h-5" />
+              Osteoncologia
+              <Badge 
+                variant="secondary" 
+                className="ml-2 px-3 py-1 text-sm font-bold bg-white text-gray-700 border border-gray-300"
+              >
+                {(calendarData[selectedDates["Osteoncologia"]]?.["Osteoncologia"] || []).length}
+              </Badge>
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Filtri per data e Blocco Slot */}
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  <Label htmlFor="date">Data {activeAmbulatorio}:</Label>
+                  <Input
+                    id="date"
+                    type="date"
+                    value={selectedDates[activeAmbulatorio as keyof typeof selectedDates]}
+                    onChange={(e) => setSelectedDates({
+                      ...selectedDates,
+                      [activeAmbulatorio]: e.target.value
+                    })}
+                    className="w-48"
+                  />
+                </div>
+                
+                {/* Pulsante Blocco Slot */}
+                <div className="flex items-center gap-2">
+                  <Dialog open={showBlockSlotDialog} onOpenChange={setShowBlockSlotDialog}>
                   <DialogTrigger asChild>
-                    <Button variant="outline" className="flex items-center gap-2">
+                    <Button 
+                      variant="outline" 
+                      className="flex items-center gap-2"
+                      onClick={() => {
+                        setBlockSlotData({
+                          ...blockSlotData,
+                          ambulatorio: activeAmbulatorio
+                        });
+                      }}
+                    >
                       <Lock className="w-4 h-4" />
                       Blocca Slot
                     </Button>
@@ -476,9 +674,10 @@ const VisiteAmbulatoriPage = () => {
           </CardContent>
         </Card>
 
-        {/* Calendario */}
-        <div className="grid md:grid-cols-3 gap-6">
-          {Object.entries(filteredData).map(([ambulatorio, slots]) => (
+          {/* Contenuto Tabs */}
+          <TabsContent value="cure-simultanee">
+            <div className="space-y-6">
+              {Object.entries(filteredData).map(([ambulatorio, slots]) => (
             <Card key={ambulatorio}>
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
@@ -512,134 +711,118 @@ const VisiteAmbulatoriPage = () => {
                 </CardTitle>
                 <CardDescription>
                   {ambulatorio === 'Osteoncologia' 
-                    ? `Visite e discussioni del ${selectedDate}`
-                    : `Visite del ${selectedDate}`
+                    ? `Visite e discussioni del ${selectedDates[ambulatorio as keyof typeof selectedDates]}`
+                    : `Visite del ${selectedDates[ambulatorio as keyof typeof selectedDates]}`
                   }
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {/* Separa Visite/Slot e Discussioni */}
-                {(() => {
-                  const visiteSlots = slots.filter(s => s.tipo !== 'Discussione');
-                  const discussioniSlots = ambulatorio === 'Osteoncologia' ? slots.filter(s => s.tipo === 'Discussione') : [];
-                  return (
-                    <div className="space-y-6">
-                      <div>
-                        <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2"><Stethoscope className="w-4 h-4 text-green-600" />Visite</h4>
-                        <div className="space-y-3">
-                          {visiteSlots.map((slot, index) => (
-                            <div key={`v-${index}`} className={`p-3 rounded-lg border ${getStatusColor(slot.stato)} bg-green-50 border-l-4 border-l-green-500`}>
-                              <div className="flex items-center justify-between mb-2">
-                                <div className="flex items-center gap-2">
-                                  {getStatusIcon(slot.stato)}
-                                  <span className="font-medium">{slot.ora}</span>
-                                </div>
-                                {slot.stato === 'libero' && (
-                                  <Button 
-                                    size="sm" 
-                                    variant="outline"
-                                    onClick={() => {
-                                      setBlockSlotData({
-                                        ...blockSlotData,
-                                        ambulatorio: ambulatorio,
-                                        ora: slot.ora
-                                      });
-                                      setShowBlockSlotDialog(true);
-                                    }}
-                                  >
-                                    <Lock className="w-3 h-3 mr-1" />
-                                    Blocca
-                                  </Button>
-                                )}
-                              </div>
-                              {slot.paziente ? (
-                                <div className="space-y-1 text-sm">
-                                  <p className="text-base font-bold text-gray-900 mb-2 border-b border-gray-200 pb-1">{slot.paziente}</p>
-                                  {ambulatorio === "Cure Simultanee" && (slot as SlotData).problemi && (
-                                    <p><strong>Problemi:</strong> {(slot as SlotData).problemi}</p>
-                                  )}
-                                  {ambulatorio === "Oncogeriatria" && (
-                                    <>
-                                      {(slot as SlotData).neoplasia && <p><strong>Neoplasia:</strong> {(slot as SlotData).neoplasia}</p>}
-                                      {(slot as SlotData).stadio && <p><strong>Stadio:</strong> {(slot as SlotData).stadio}</p>}
-                                      {(slot as SlotData).finalitaTrattamento && <p><strong>Finalità trattamento:</strong> {(slot as SlotData).finalitaTrattamento}</p>}
-                                      {(slot as SlotData).ecogPS && <p><strong>ECOG PS:</strong> {(slot as SlotData).ecogPS}</p>}
-                                      {(slot as SlotData).punteggioG8 && <p><strong>Punteggio G8:</strong> {(slot as SlotData).punteggioG8}</p>}
-                                      {(slot as SlotData).esitoVGM && <p><strong>Esito VGM:</strong> {(slot as SlotData).esitoVGM}</p>}
-                                      {(slot as SlotData).quesitoGeriatra && <p><strong>Quesito per geriatra:</strong> {(slot as SlotData).quesitoGeriatra}</p>}
-                                    </>
-                                  )}
-                                  {ambulatorio === "Osteoncologia" && (
-                                    <>
-                                      {(slot as SlotData).problemi && <p><strong>Problemi:</strong> {(slot as SlotData).problemi}</p>}
-                                      {(slot as SlotData).quesito && <p><strong>Quesito:</strong> {(slot as SlotData).quesito}</p>}
-                                    </>
-                                  )}
-                                  <p><strong>Medico Referente:</strong> {slot.medico}</p>
-                                </div>
-                              ) : (
-                                <div className="text-sm text-muted-foreground">Slot disponibile per nuova prenotazione</div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {discussioniSlots.length > 0 && (
-                        <div>
-                          <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2"><MessageSquare className="w-4 h-4 text-blue-600" />Discussioni</h4>
-                          <div className="space-y-3">
-                            {discussioniSlots.map((slot, index) => (
-                              <div key={`d-${index}`} className={`p-3 rounded-lg border bg-blue-50 ${getStatusBorderOnly(slot.stato)} border-l-4 border-l-blue-500`}>
-                                <div className="flex items-center justify-between mb-2">
-                                  <div className="flex items-center gap-2">
-                                    {getStatusIcon(slot.stato)}
-                                    <Badge variant="outline" className="bg-blue-50 border-blue-200 text-blue-700">Discussione</Badge>
-                                  </div>
-                                </div>
-                                <div className="space-y-1 text-sm">
-                                  <p className="text-base font-bold text-blue-900 mb-2 border-b border-blue-200 pb-1">{slot.paziente}</p>
-                                  {ambulatorio === "Cure Simultanee" && (slot as SlotData).problemi && (
-                                    <p><strong>Problemi:</strong> {(slot as SlotData).problemi}</p>
-                                  )}
-                                  {ambulatorio === "Oncogeriatria" && (
-                                    <>
-                                      {(slot as SlotData).neoplasia && <p><strong>Neoplasia:</strong> {(slot as SlotData).neoplasia}</p>}
-                                      {(slot as SlotData).stadio && <p><strong>Stadio:</strong> {(slot as SlotData).stadio}</p>}
-                                      {(slot as SlotData).finalitaTrattamento && <p><strong>Finalità trattamento:</strong> {(slot as SlotData).finalitaTrattamento}</p>}
-                                      {(slot as SlotData).ecogPS && <p><strong>ECOG PS:</strong> {(slot as SlotData).ecogPS}</p>}
-                                      {(slot as SlotData).punteggioG8 && <p><strong>Punteggio G8:</strong> {(slot as SlotData).punteggioG8}</p>}
-                                      {(slot as SlotData).esitoVGM && <p><strong>Esito VGM:</strong> {(slot as SlotData).esitoVGM}</p>}
-                                      {(slot as SlotData).quesitoGeriatra && <p><strong>Quesito per geriatra:</strong> {(slot as SlotData).quesitoGeriatra}</p>}
-                                    </>
-                                  )}
-                                  {ambulatorio === "Osteoncologia" && (
-                                    <>
-                                      {(slot as SlotData).problemi && <p><strong>Problemi:</strong> {(slot as SlotData).problemi}</p>}
-                                      {(slot as SlotData).quesito && <p><strong>Quesito:</strong> {(slot as SlotData).quesito}</p>}
-                                    </>
-                                  )}
-                                  <p><strong>Medico Referente:</strong> {slot.medico}</p>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })()}
+                {renderSlotContent(ambulatorio, slots)}
               </CardContent>
             </Card>
-          ))}
-        </div>
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="oncogeriatria">
+            <div className="space-y-6">
+              {Object.entries(getFilteredDataForAmbulatorio("Oncogeriatria")).map(([ambulatorio, slots]) => (
+                <Card key={ambulatorio}>
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                      <span>{ambulatorio}</span>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-8 px-2">
+                            <Download className="w-4 h-4 mr-1" />
+                            Esporta
+                            <ChevronDown className="w-3 h-3 ml-1" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="min-w-[200px]">
+                          <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase">
+                            {ambulatorio}
+                          </div>
+                          <DropdownMenuItem onClick={() => handleExportCSV(ambulatorio)}>
+                            <FileText className="w-4 h-4 mr-2" />
+                            Esporta CSV
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleExportExcel(ambulatorio)}>
+                            <FileSpreadsheet className="w-4 h-4 mr-2" />
+                            Esporta Excel
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleExportPDF(ambulatorio)}>
+                            <FileText className="w-4 h-4 mr-2" />
+                            Esporta PDF
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </CardTitle>
+                    <CardDescription>
+                      Visite del {selectedDates["Oncogeriatria"]}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {renderSlotContent(ambulatorio, slots)}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="osteoncologia">
+            <div className="space-y-6">
+              {Object.entries(getFilteredDataForAmbulatorio("Osteoncologia")).map(([ambulatorio, slots]) => (
+                <Card key={ambulatorio}>
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                      <span>{ambulatorio}</span>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-8 px-2">
+                            <Download className="w-4 h-4 mr-1" />
+                            Esporta
+                            <ChevronDown className="w-3 h-3 ml-1" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="min-w-[200px]">
+                          <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase">
+                            {ambulatorio}
+                          </div>
+                          <DropdownMenuItem onClick={() => handleExportCSV(ambulatorio)}>
+                            <FileText className="w-4 h-4 mr-2" />
+                            Esporta CSV
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleExportExcel(ambulatorio)}>
+                            <FileSpreadsheet className="w-4 h-4 mr-2" />
+                            Esporta Excel
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleExportPDF(ambulatorio)}>
+                            <FileText className="w-4 h-4 mr-2" />
+                            Esporta PDF
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </CardTitle>
+                    <CardDescription>
+                      Visite e discussioni del {selectedDates["Osteoncologia"]}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {renderSlotContent(ambulatorio, slots)}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+        </Tabs>
 
         {/* Riepilogo giornaliero */}
         <Card className="mt-6">
           <CardHeader>
-            <CardTitle>Riepilogo Giornaliero</CardTitle>
+            <CardTitle>Riepilogo Giornaliero - {activeAmbulatorio}</CardTitle>
             <CardDescription>
-              Statistiche per il {selectedDate}
+              Statistiche per il {selectedDates[activeAmbulatorio as keyof typeof selectedDates]}
             </CardDescription>
           </CardHeader>
           <CardContent>

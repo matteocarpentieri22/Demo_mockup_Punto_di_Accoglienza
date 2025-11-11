@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import SystemSelector from "@/mmg/pages/SystemSelector";
 import Index from "@/mmg/pages/Index";
 import Documenti from "@/mmg/pages/Documenti";
+import LinkUtili from "@/mmg/pages/LinkUtili";
 import NotFound from "@/mmg/pages/NotFound";
 
 // Rotte Oncologico
@@ -24,6 +25,10 @@ import RicercaPazientePage from "@/oncologico/pages/RicercaPazientePage";
 import AggiuntaPazientePage from "@/oncologico/pages/AggiuntaPazientePage";
 import CaseManagerDashboard from "@/oncologico/pages/CaseManagerDashboard";
 import ElencoPazientiPage from "@/oncologico/pages/ElencoPazientiPage";
+import PazienteTriageDetailPage from "@/oncologico/pages/PazienteTriageDetailPage";
+import CaseManagerMammellaSarcomiMelanomi from "@/oncologico/pages/CaseManagerMammellaSarcomiMelanomi";
+import TriageMammellaSarcomiMelanomi from "@/oncologico/pages/TriageMammellaSarcomiMelanomi";
+import ElencoPazientiMammellaSarcomiMelanomi from "@/oncologico/pages/ElencoPazientiMammellaSarcomiMelanomi";
 import CalendarioPage from "@/oncologico/pages/CalendarioPage";
 import PazienteDetailPage from "@/oncologico/pages/PazienteDetailPage";
 import CureSimultaneePage from "@/oncologico/pages/CureSimultaneePage";
@@ -50,6 +55,7 @@ const App = () => (
           <Route path="/" element={<SystemSelector />} />
           <Route path="/mmg" element={<Index />} />
           <Route path="/mmg/documenti" element={<Documenti />} />
+          <Route path="/mmg/link-utili" element={<LinkUtili />} />
           
           {/* Rotte Oncologico */}
           <Route path="/oncologico" element={<OncologicoHome />} />
@@ -65,6 +71,11 @@ const App = () => (
           <Route path="/oncologico/case-manager/aggiunta-paziente" element={<AggiuntaPazientePage />} />
           <Route path="/oncologico/case-manager/dashboard" element={<CaseManagerDashboard />} />
           <Route path="/oncologico/case-manager/elenco-pazienti" element={<ElencoPazientiPage />} />
+          <Route path="/oncologico/case-manager/elenco-pazienti/:id" element={<PazienteTriageDetailPage />} />
+          <Route path="/oncologico/case-manager/mammella-sarcomi-melanomi" element={<CaseManagerMammellaSarcomiMelanomi />} />
+          <Route path="/oncologico/case-manager/mammella-sarcomi-melanomi/triage" element={<TriageMammellaSarcomiMelanomi />} />
+          <Route path="/oncologico/case-manager/mammella-sarcomi-melanomi/elenco-pazienti" element={<ElencoPazientiMammellaSarcomiMelanomi />} />
+          <Route path="/oncologico/case-manager/mammella-sarcomi-melanomi/elenco-pazienti/:id" element={<PazienteTriageDetailPage />} />
           <Route path="/oncologico/calendario" element={<CalendarioPage />} />
           <Route path="/oncologico/paziente/:cf" element={<PazienteDetailPage />} />
           <Route path="/oncologico/ambulatori/cure-simultanee" element={<CureSimultaneePage />} />

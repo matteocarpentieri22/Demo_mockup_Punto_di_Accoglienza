@@ -327,7 +327,8 @@ const RichiestePage = () => {
     const csvContent = [
       ["ID", "Paziente", "CF", "PDTA", "Ambulatorio", "Quesito", "Score", "Stato", "Data Richiesta", "Ora Richiesta"],
       ...filteredRichieste.map(r => [
-        r.id, r.paziente, r.cf, r.pdta, r.ambulatorio, r.quesito, r.score,
+        r.id, r.paziente, r.cf, r.pdta, r.ambulatorio, r.quesito, 
+        r.ambulatorio === "Oncogeriatria" ? "-" : r.score,
         getStatoLabel(r.stato), r.dataRichiesta, r.oraRichiesta
       ])
     ].map(e => e.join(",")).join("\n");
@@ -524,9 +525,13 @@ const RichiestePage = () => {
                       {richiesta.quesito}
                     </TableCell>
                     <TableCell className="py-4">
-                      <Badge className="bg-purple-50 text-purple-700 border-purple-200 px-3 py-1 rounded-full text-sm font-medium">
-                        {richiesta.score}
-                      </Badge>
+                      {richiesta.ambulatorio === "Oncogeriatria" ? (
+                        <span className="text-gray-400 text-sm italic">-</span>
+                      ) : (
+                        <Badge className="bg-purple-50 text-purple-700 border-purple-200 px-3 py-1 rounded-full text-sm font-medium">
+                          {richiesta.score}
+                        </Badge>
+                      )}
                     </TableCell>
                     <TableCell className="py-4">
                       <Badge className={`${getStatoColor(richiesta.stato)} px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1 w-fit`}>

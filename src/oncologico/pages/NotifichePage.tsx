@@ -265,7 +265,7 @@ const NotifichePage = () => {
   useEffect(() => {
     const unreadCount = notifiche.filter(n => !n.letto).length;
     localStorage.setItem('unreadNotificationsCount', unreadCount.toString());
-  }, []);
+  }, [notifiche]);
 
   const handleNotificaClick = (notifica: Notifica) => {
     // Se la notifica non è ancora stata letta, la marco come letta

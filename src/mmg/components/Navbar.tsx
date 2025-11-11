@@ -1,8 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
-import { FileText, ExternalLink, Home, User, LogOut } from "lucide-react";
+import { FileText, Home, User, LogOut, Link2 } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { Avatar, AvatarFallback } from "@/shared/components/ui/avatar";
-import { Badge } from "@/shared/components/ui/badge";
 
 export const Navbar = () => {
   const location = useLocation();
@@ -42,16 +41,16 @@ export const Navbar = () => {
               </div>
             </Link>
             
-            <a 
-              href="https://www.ioveneto.it/prenotazioni-referti-e-disdette/servizio-sanitario-nazionale/" 
-              target="_blank" 
-              rel="noopener noreferrer"
-            >
-              <div className="flex items-center gap-2 px-3 xl:px-4 py-2 rounded-md cursor-pointer transition-colors duration-300 hover:bg-primary/20 hover:text-primary bg-transparent">
-                <ExternalLink className="w-4 h-4" />
-                <span className="text-sm xl:text-base">CUP</span>
+            <Link to="/mmg/link-utili">
+              <div 
+                className={`flex items-center gap-2 px-3 xl:px-4 py-2 rounded-md cursor-pointer transition-colors duration-300 hover:bg-primary/20 hover:text-primary ${
+                  isActive('/mmg/link-utili') ? 'bg-primary/15 text-primary' : 'bg-transparent'
+                }`}
+              >
+                <Link2 className="w-4 h-4" />
+                <span className="text-sm xl:text-base">Link Utili</span>
               </div>
-            </a>
+            </Link>
           </nav>
 
                  {/* Sezione login dottore */}
@@ -113,16 +112,16 @@ export const Navbar = () => {
               </div>
             </Link>
             
-            <a 
-              href="https://www.ioveneto.it/prenotazioni-referti-e-disdette/servizio-sanitario-nazionale/" 
-              target="_blank" 
-              rel="noopener noreferrer"
-            >
-              <div className="flex flex-col items-center gap-1 px-3 py-2 rounded-md cursor-pointer transition-colors duration-300 hover:bg-primary/20 hover:text-primary bg-transparent">
-                <ExternalLink className="w-4 h-4" />
-                <span className="text-xs">CUP</span>
+            <Link to="/mmg/link-utili">
+              <div 
+                className={`flex flex-col items-center gap-1 px-3 py-2 rounded-md cursor-pointer transition-colors duration-300 hover:bg-primary/20 hover:text-primary ${
+                  isActive('/mmg/link-utili') ? 'bg-primary/15 text-primary' : 'bg-transparent'
+                }`}
+              >
+                <Link2 className="w-4 h-4" />
+                <span className="text-xs">Link Utili</span>
               </div>
-            </a>
+            </Link>
           </nav>
         </div>
       </div>

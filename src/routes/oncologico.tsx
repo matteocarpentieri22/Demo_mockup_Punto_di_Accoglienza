@@ -16,6 +16,10 @@ import RicercaPazientePage from "@/oncologico/pages/RicercaPazientePage";
 import AggiuntaPazientePage from "@/oncologico/pages/AggiuntaPazientePage";
 import CaseManagerDashboard from "@/oncologico/pages/CaseManagerDashboard";
 import ElencoPazientiPage from "@/oncologico/pages/ElencoPazientiPage";
+import PazienteTriageDetailPage from "@/oncologico/pages/PazienteTriageDetailPage";
+import CaseManagerMammellaSarcomiMelanomi from "@/oncologico/pages/CaseManagerMammellaSarcomiMelanomi";
+import TriageMammellaSarcomiMelanomi from "@/oncologico/pages/TriageMammellaSarcomiMelanomi";
+import ElencoPazientiMammellaSarcomiMelanomi from "@/oncologico/pages/ElencoPazientiMammellaSarcomiMelanomi";
 import CalendarioPage from "@/oncologico/pages/CalendarioPage";
 import PazienteDetailPage from "@/oncologico/pages/PazienteDetailPage";
 import CureSimultaneePage from "@/oncologico/pages/CureSimultaneePage";
@@ -42,6 +46,11 @@ export const OncologicoRoutes = () => (
     <Route path="/oncologico/case-manager/aggiunta-paziente" element={<AggiuntaPazientePage />} />
     <Route path="/oncologico/case-manager/dashboard" element={<CaseManagerDashboard />} />
     <Route path="/oncologico/case-manager/elenco-pazienti" element={<ElencoPazientiPage />} />
+    <Route path="/oncologico/case-manager/elenco-pazienti/:id" element={<PazienteTriageDetailPage />} />
+    <Route path="/oncologico/case-manager/mammella-sarcomi-melanomi" element={<CaseManagerMammellaSarcomiMelanomi />} />
+    <Route path="/oncologico/case-manager/mammella-sarcomi-melanomi/triage" element={<TriageMammellaSarcomiMelanomi />} />
+    <Route path="/oncologico/case-manager/mammella-sarcomi-melanomi/elenco-pazienti" element={<ElencoPazientiMammellaSarcomiMelanomi />} />
+    <Route path="/oncologico/case-manager/mammella-sarcomi-melanomi/elenco-pazienti/:id" element={<PazienteTriageDetailPage />} />
     
     {/* Calendario */}
     <Route path="/oncologico/calendario" element={<CalendarioPage />} />

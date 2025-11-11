@@ -2,9 +2,7 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/shared/components/ui/dialog";
 import { Button } from "@/shared/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
-import { RadioGroup, RadioGroupItem } from "@/shared/components/ui/radio-group";
 import { Label } from "@/shared/components/ui/label";
-import { CheckCircle2, XCircle } from "lucide-react";
 
 interface DirectSelectionDialogProps {
   open: boolean;
@@ -23,65 +21,67 @@ const PDTA_LIST = [
   "Sistema nervoso centrale"
 ];
 
+type ChecklistItem = {
+  id: string;
+  label: string;
+};
+
+const PDTA_CHECKLISTS: Record<string, ChecklistItem[]> = {
+  "Polmone": [
+    { id: "pol-1", label: "Rx torace" },
+    { id: "pol-2", label: "TC torace" },
+    { id: "pol-3", label: "Visita pneumologica" },
+    { id: "pol-4", label: "Biopsia ed esame istologico" }
+  ],
+  "Prostata": [
+    { id: "prost-1", label: "Visita urologica + ER + PSA" },
+    { id: "prost-2", label: "RM prostatica multiparametrica" },
+    { id: "prost-3", label: "Biopsia prostatica" }
+  ],
+  "Colon": [
+    { id: "colon-1", label: "Visita specialistica (gastroenterologo o chirurgo)" },
+    { id: "colon-2", label: "Pancolonscopia con biopsia" },
+    { id: "colon-3", label: "Esame istologico" }
+  ],
+  "Retto": [
+    { id: "retto-1", label: "Visita specialistica (gastroenterologo o chirurgo)" },
+    { id: "retto-2", label: "Pancolonscopia con biopsia" },
+    { id: "retto-3", label: "Esame istologico" }
+  ],
+  "Melanoma": [
+    { id: "mel-1", label: "Visita dermatologica con dermatoscopia o chirurgica per neoformazioni" },
+    { id: "mel-2", label: "Biopsia escissionale ed esame istologico" }
+  ],
+  "Mammella": [
+    { id: "mam-1", label: "Visita senologica" },
+    { id: "mam-2", label: "Mammografia bilaterale" },
+    { id: "mam-3", label: "Ecografia bilaterale" },
+    { id: "mam-4", label: "Biopsia ed esame istologico" }
+  ],
+  "Stomaco": [
+    { id: "sto-1", label: "EGDS (Esofagogastroduodenoscopia) con biopsia" },
+    { id: "sto-2", label: "Esame istologico" }
+  ],
+  "Sarcomi dei tessuti molli": [
+    { id: "sar-1", label: "Visita chirurgica" },
+    { id: "sar-2", label: "Ecografia dei tessuti molli" },
+    { id: "sar-3", label: "Risonanza magnetica (eventualmente con ecografia)" },
+    { id: "sar-4", label: "Biopsia ed esame istologico" }
+  ],
+  "Sistema nervoso centrale": [
+    { id: "snc-1", label: "Visita neurologica" },
+    { id: "snc-2", label: "Risonanza Magnetica (RMN) o Tomografia Computerizzata (TC)" }
+  ]
+};
+
 export function DirectSelectionDialog({ open, onOpenChange }: DirectSelectionDialogProps) {
   const [selectedPDTA, setSelectedPDTA] = useState<string>("");
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answers, setAnswers] = useState<Record<number, string>>({});
-  const [showResult, setShowResult] = useState(false);
 
-  const questions = [
-    {
-      question: "Il paziente ha effettuato gli esami ematochimici preliminari?",
-      options: ["Sì, completi", "Sì, parziali", "No"]
-    },
-    {
-      question: "Il paziente ha eseguito esami di imaging diagnostico?",
-      options: ["Sì, recenti (< 3 mesi)", "Sì, ma datati (> 3 mesi)", "No"]
-    },
-    {
-      question: "Il paziente soddisfa i criteri di età per il PDTA selezionato?",
-      options: ["Sì", "No", "Non sono sicuro"]
-    }
-  ];
-
-  const handleStartQuestions = () => {
-    if (selectedPDTA) {
-      setCurrentQuestion(0);
-      setAnswers({});
-      setShowResult(false);
-    }
-  };
-
-  const handleAnswer = (value: string) => {
-    setAnswers({ ...answers, [currentQuestion]: value });
-  };
-
-  const handleNext = () => {
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
-    } else {
-      setShowResult(true);
-    }
-  };
-
-  const handleBack = () => {
-    if (currentQuestion > 0) {
-      setCurrentQuestion(currentQuestion - 1);
-    }
-  };
+  const checklist = selectedPDTA ? PDTA_CHECKLISTS[selectedPDTA] || [] : [];
 
   const resetDialog = () => {
     setSelectedPDTA("");
-    setCurrentQuestion(0);
-    setAnswers({});
-    setShowResult(false);
   };
-
-  const allQuestionsAnswered = Object.keys(answers).length === questions.length;
-  const patientQualifies = allQuestionsAnswered && 
-    answers[0] === "Sì, completi" && 
-    answers[1] === "Sì, recenti (< 3 mesi)" && 
-    answers[2] === "Sì";
 
   return (
     <Dialog open={open} onOpenChange={(open) => {
@@ -92,7 +92,7 @@ export function DirectSelectionDialog({ open, onOpenChange }: DirectSelectionDia
         <DialogHeader>
           <DialogTitle>Selezione Diretta PDTA</DialogTitle>
           <DialogDescription>
-            Seleziona il PDTA e verifica i requisiti del paziente
+            Seleziona il PDTA per visualizzare gli esami necessari
           </DialogDescription>
         </DialogHeader>
 
@@ -102,7 +102,9 @@ export function DirectSelectionDialog({ open, onOpenChange }: DirectSelectionDia
               <Label htmlFor="pdta-select" className="text-base font-semibold mb-3 block">
                 Seleziona il PDTA
               </Label>
-              <Select value={selectedPDTA} onValueChange={setSelectedPDTA}>
+              <Select value={selectedPDTA} onValueChange={(value) => {
+                setSelectedPDTA(value);
+              }}>
                 <SelectTrigger id="pdta-select" className="w-full">
                   <SelectValue placeholder="Scegli un percorso..." />
                 </SelectTrigger>
@@ -115,95 +117,43 @@ export function DirectSelectionDialog({ open, onOpenChange }: DirectSelectionDia
                 </SelectContent>
               </Select>
             </div>
-            <Button 
-              onClick={handleStartQuestions} 
-              disabled={!selectedPDTA}
-              className="w-full"
-              size="lg"
-            >
-              Inizia Verifica
-            </Button>
           </div>
-        ) : !showResult ? (
-          <div className="space-y-6 py-4">
+        ) : (
+          <div className="space-y-6 py-4 max-h-[60vh] overflow-y-auto">
             <div className="bg-primary/5 p-4 rounded-lg">
               <p className="text-sm font-semibold text-primary">PDTA Selezionato: {selectedPDTA}</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Domanda {currentQuestion + 1} di {questions.length}
-              </p>
             </div>
 
             <div className="space-y-4">
-              <Label className="text-base font-semibold">
-                {questions[currentQuestion].question}
+              <Label className="text-base font-semibold text-gray-800">
+                Esami necessari per la visita oncologica:
               </Label>
-              <RadioGroup 
-                value={answers[currentQuestion]} 
-                onValueChange={handleAnswer}
-              >
-                {questions[currentQuestion].options.map((option) => (
-                  <div key={option} className="flex items-center space-x-2">
-                    <RadioGroupItem value={option} id={option} />
-                    <Label htmlFor={option} className="cursor-pointer">
-                      {option}
-                    </Label>
-                  </div>
-                ))}
-              </RadioGroup>
+              <div className="border rounded-xl p-6 bg-gradient-to-br from-blue-50/50 via-white to-blue-50/30 shadow-sm">
+                <ul className="space-y-3">
+                  {checklist.map((item, index) => (
+                    <li 
+                      key={item.id} 
+                      className="flex items-center gap-3 p-3 rounded-lg bg-white/80 hover:bg-white transition-all duration-200 hover:shadow-md border border-gray-100"
+                    >
+                      <div className="flex-shrink-0">
+                        <div className="w-3 h-3 rounded-full bg-blue-600"></div>
+                      </div>
+                      <span className="text-sm font-medium text-gray-800 leading-relaxed flex-1">
+                        {item.label}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
 
             <div className="flex gap-2">
               <Button 
                 variant="outline" 
-                onClick={handleBack}
-                disabled={currentQuestion === 0}
+                onClick={resetDialog}
                 className="flex-1"
               >
                 Indietro
-              </Button>
-              <Button 
-                onClick={handleNext}
-                disabled={!answers[currentQuestion]}
-                className="flex-1"
-              >
-                {currentQuestion < questions.length - 1 ? "Avanti" : "Completa"}
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-6 py-4">
-            <div className={`p-6 rounded-lg text-center ${
-              patientQualifies ? "bg-green-50 border-2 border-green-200" : "bg-orange-50 border-2 border-orange-200"
-            }`}>
-              {patientQualifies ? (
-                <>
-                  <CheckCircle2 className="w-16 h-16 text-green-600 mx-auto mb-4" />
-                  <h3 className="text-xl font-bold text-green-900 mb-2">
-                    Paziente idoneo per il PDTA {selectedPDTA}
-                  </h3>
-                  <p className="text-green-800">
-                    Il paziente soddisfa tutti i requisiti preliminari. Puoi procedere con la richiesta di accesso al percorso.
-                  </p>
-                </>
-              ) : (
-                <>
-                  <XCircle className="w-16 h-16 text-orange-600 mx-auto mb-4" />
-                  <h3 className="text-xl font-bold text-orange-900 mb-2">
-                    Requisiti non completamente soddisfatti
-                  </h3>
-                  <p className="text-orange-800">
-                    Alcuni prerequisiti potrebbero mancare. Verifica la documentazione necessaria nella sezione Documenti o contatta il Punto di Accoglienza IOV.
-                  </p>
-                </>
-              )}
-            </div>
-
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={resetDialog} className="flex-1">
-                Nuova Verifica
-              </Button>
-              <Button onClick={() => onOpenChange(false)} className="flex-1">
-                Chiudi
               </Button>
             </div>
           </div>

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import CaseManagerNavbar from "@/oncologico/components/layout/CaseManagerNavbar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
@@ -8,11 +8,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/shared/components/ui/checkbox";
 import { Badge } from "@/shared/components/ui/badge";
 import { Separator } from "@/shared/components/ui/separator";
-import { Collapsible, CollapsibleContent } from "@/shared/components/ui/collapsible";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { useToast } from "@/shared/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, CheckCircle, Search, User, ClipboardCheck, Upload, FileText, Download } from "lucide-react";
+import { ArrowLeft, CheckCircle, Search, User, Upload, FileText, Download } from "lucide-react";
 import jsPDF from "jspdf";
 
 type RegistryPatient = {
@@ -67,30 +66,13 @@ const MOCK_REGISTRY: RegistryPatient[] = [
   }
 ];
 
-// PDTA richiesti (9 voci con mock checklist)
-type PdtaKey =
-  | "prostata"
-  | "colon"
-  | "retto"
-  | "mammella"
-  | "snc"
-  | "polmone"
-  | "stomaco"
-  | "melanoma"
-  | "sarcoma"
-  | "stomaco-2"; // duplicazione richiesta
+// PDTA disponibili solo per Mammella, Sarcomi e Melanomi
+type PdtaKey = "mammella" | "melanoma" | "sarcoma";
 
 const PDTA_LABEL: Record<PdtaKey, string> = {
-  "prostata": "Prostata",
-  "colon": "Colon",
-  "retto": "Retto",
   "mammella": "Mammella",
-  "snc": "Sistema Nervoso Centrale",
-  "polmone": "Polmone",
-  "stomaco": "Stomaco",
   "melanoma": "Melanoma",
-  "sarcoma": "Sarcoma",
-  "stomaco-2": "Stomaco"
+  "sarcoma": "Sarcoma"
 };
 
 type ChecklistItem = {
@@ -100,37 +82,10 @@ type ChecklistItem = {
 };
 
 const PDTA_CHECKLIST: Record<PdtaKey, ChecklistItem[]> = {
-  prostata: [
-    { id: "prost-1", label: "Checklist prostata", required: true }
-  ],
-  colon: [
-    { id: "colon-1", label: "Istologico confermato", required: true },
-    { id: "colon-2", label: "Stadiazione TNM aggiornata" },
-    { id: "colon-3", label: "CEA baseline", required: true },
-    { id: "colon-4", label: "TC TAP entro 60 gg" }
-  ],
-  retto: [
-    { id: "retto-1", label: "RM pelvi eseguita", required: true },
-    { id: "retto-2", label: "Valutazione CRM" },
-    { id: "retto-3", label: "Discussione MDT", required: true }
-  ],
   mammella: [
     { id: "mam-1", label: "Recettori ER/PgR/HER2", required: true },
     { id: "mam-2", label: "Ki-67" },
     { id: "mam-3", label: "Imaging bilaterale" }
-  ],
-  snc: [
-    { id: "snc-1", label: "RM encefalo con e senza contrasto", required: true },
-    { id: "snc-2", label: "Referto neurochirurgico" }
-  ],
-  polmone: [
-    { id: "pol-1", label: "Istologia e PD-L1", required: true },
-    { id: "pol-2", label: "NGS driver (EGFR/ALK/ROS1...)" },
-    { id: "pol-3", label: "TC torace-addome" }
-  ],
-  stomaco: [
-    { id: "sto-1", label: "HER2/IHC", required: true },
-    { id: "sto-2", label: "Nutrizione (MUST)" }
   ],
   melanoma: [
     { id: "mel-1", label: "BRAF/NRAS", required: true },
@@ -139,35 +94,15 @@ const PDTA_CHECKLIST: Record<PdtaKey, ChecklistItem[]> = {
   sarcoma: [
     { id: "sar-1", label: "Referto istologico centro sarcomi", required: true },
     { id: "sar-2", label: "Imaging distretto e polmoni" }
-  ],
-  "stomaco-2": [
-    { id: "sto2-1", label: "HER2/IHC (ripetizione)", required: true },
-    { id: "sto2-2", label: "Valutazione preabilitazione" }
   ]
 };
 
-// Esami/visite richiesti per prima visita oncologica per ogni PDTA
 type EsameVisitaItem = {
   id: string;
   label: string;
 };
 
 const ESAMI_VISITE_RICHIESTI: Record<PdtaKey, EsameVisitaItem[]> = {
-  prostata: [
-    { id: "prostata-1", label: "Visita urologica + ER + PSA" },
-    { id: "prostata-2", label: "RM prostatica multiparametrica" },
-    { id: "prostata-3", label: "Biopsia prostatica" }
-  ],
-  colon: [
-    { id: "colon-1", label: "Visita specialistica (gastroenterologo o chirurgo)" },
-    { id: "colon-2", label: "Pancolonscopia con biopsia" },
-    { id: "colon-3", label: "Esame istologico" }
-  ],
-  retto: [
-    { id: "retto-1", label: "Visita specialistica (gastroenterologo o chirurgo)" },
-    { id: "retto-2", label: "Pancolonscopia con biopsia" },
-    { id: "retto-3", label: "Esame istologico" }
-  ],
   melanoma: [
     { id: "melanoma-1", label: "Visita dermatologica per nevi con dermatoscopia o Visita Chirurgica per neoformazioni" },
     { id: "melanoma-2", label: "Biopsia escissionale ed esame istologico" }
@@ -178,45 +113,27 @@ const ESAMI_VISITE_RICHIESTI: Record<PdtaKey, EsameVisitaItem[]> = {
     { id: "mammella-3", label: "Ecografia bilaterale" },
     { id: "mammella-4", label: "Biopsia ed esame istologico" }
   ],
-  stomaco: [
-    { id: "stomaco-1", label: "EGDS (Esofagogastroduodenoscopia) con biopsia" },
-    { id: "stomaco-2", label: "Esame istologico" }
-  ],
   sarcoma: [
     { id: "sarcoma-1", label: "Visita chirurgica" },
     { id: "sarcoma-2", label: "Ecografia dei tessuti molli" },
     { id: "sarcoma-3", label: "Risonanza magnetica (eventualmente associata ad ecografia)" },
     { id: "sarcoma-4", label: "Biopsia ed esame istologico" }
-  ],
-  snc: [
-    { id: "snc-1", label: "Visita neurologica" },
-    { id: "snc-2", label: "Risonanza magnetica Nucleare (RMN) o Tomografia Computerizzata (TC)" }
-  ],
-  polmone: [
-    { id: "polmone-1", label: "Rx torace" },
-    { id: "polmone-2", label: "TC torace" },
-    { id: "polmone-3", label: "Visita Pneumologica" },
-    { id: "polmone-4", label: "Biopsia ed esame istologico" }
-  ],
-  "stomaco-2": [
-    { id: "stomaco2-1", label: "EGDS (Esofagogastroduodenoscopia) con biopsia" },
-    { id: "stomaco2-2", label: "Esame istologico" }
   ]
 };
 
-const AggiuntaPazientePage = () => {
+const TriageMammellaSarcomiMelanomi = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [isSearching, setIsSearching] = useState<boolean>(false);
+  const [hasSearched, setHasSearched] = useState<boolean>(false);
+  const [searchResults, setSearchResults] = useState<RegistryPatient[]>([]);
   const [selectedPatient, setSelectedPatient] = useState<RegistryPatient | null>(null);
 
   const [selectedPdta, setSelectedPdta] = useState<PdtaKey | "">("");
   const [impegnativaPDF, setImpegnativaPDF] = useState<File | null>(null);
   
-  // Mock dati di contatto per PDTA Polmone
   const [contactInfo] = useState({
     anagrafici: {
       nome: "Mario",
@@ -241,54 +158,26 @@ const AggiuntaPazientePage = () => {
     }
   });
 
-  // Esami/visite richiesti per ogni PDTA (gestito dinamicamente per tutti i PDTA)
   const [esamiRichiesti, setEsamiRichiesti] = useState<Record<string, boolean>>({});
-
-  // Note per altri esami o note aggiuntive per ogni PDTA
   const [noteEsami, setNoteEsami] = useState<Record<PdtaKey, string>>({} as Record<PdtaKey, string>);
-
-  // Esami visita pneumologica
-  const [esamiVisitaPneumologica, setEsamiVisitaPneumologica] = useState<Record<string, boolean>>({
-    "broncoscopia": false,
-    "ebus": false,
-    "eus": false,
-    "broncoscopia-biopsia": false,
-    "pfr": false,
-    "pet-tc": false
-  });
-
 
   const handleSearch = () => {
     const cf = searchTerm.trim().toUpperCase();
     if (!cf) {
-      toast({
-        title: "Errore",
-        description: "Inserisci un codice fiscale",
-        variant: "destructive"
-      });
+      setSearchResults([]);
+      setHasSearched(true);
       return;
     }
-    
-    setIsSearching(true);
-    
-    // Simula ricerca (in produzione verrebbe chiamata un'API)
-    setTimeout(() => {
-      // demo: restituisci un paziente mock con CF inserito
-      const random = MOCK_REGISTRY[Math.floor(Math.random() * MOCK_REGISTRY.length)];
-      const result: RegistryPatient = { ...random, fiscalCode: cf };
-      
-      // Seleziona automaticamente il paziente trovato e passa allo step successivo
-      setSelectedPatient(result);
-      setCurrentStep(2);
-      setIsSearching(false);
-      
-      toast({
-        title: "Paziente trovato",
-        description: `${result.lastName} ${result.firstName}`,
-      });
-    }, 500);
+    const random = MOCK_REGISTRY[Math.floor(Math.random() * MOCK_REGISTRY.length)];
+    const result: RegistryPatient = { ...random, fiscalCode: cf };
+    setSearchResults([result]);
+    setHasSearched(true);
   };
 
+  const handleSelectPatient = (p: RegistryPatient) => {
+    setSelectedPatient(p);
+    setCurrentStep(2);
+  };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -315,27 +204,22 @@ const AggiuntaPazientePage = () => {
   const handleDownloadEsamiMancanti = () => {
     if (!selectedPdta || !selectedPatient) return;
 
-    // Trova gli esami mancanti (non spuntati)
     const esamiCompleti = ESAMI_VISITE_RICHIESTI[selectedPdta] || [];
     const esamiMancanti = esamiCompleti.filter(
       (esame) => !esamiRichiesti[esame.id]
     );
 
-    // Crea il PDF
     const doc = new jsPDF();
     
-    // Titolo
     doc.setFontSize(18);
     doc.text("Esami Mancanti", 20, 20);
     
-    // Informazioni paziente (mockup)
     doc.setFontSize(12);
     doc.text(`Paziente: ${selectedPatient.lastName} ${selectedPatient.firstName}`, 20, 35);
     doc.text(`Codice Fiscale: ${selectedPatient.fiscalCode}`, 20, 42);
     doc.text(`PDTA: ${PDTA_LABEL[selectedPdta]}`, 20, 49);
     doc.text(`Data: ${new Date().toLocaleDateString('it-IT')}`, 20, 56);
     
-    // Sezione esami mancanti
     let yPosition = 70;
     doc.setFontSize(14);
     doc.text("Esami/Visite da completare:", 20, yPosition);
@@ -356,7 +240,6 @@ const AggiuntaPazientePage = () => {
       });
     }
     
-    // Note aggiuntive (se presenti)
     const note = noteEsami[selectedPdta];
     if (note && note.trim()) {
       yPosition += 10;
@@ -372,7 +255,6 @@ const AggiuntaPazientePage = () => {
       doc.text(splitNote, 20, yPosition);
     }
     
-    // Footer
     const pageCount = doc.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
@@ -384,7 +266,6 @@ const AggiuntaPazientePage = () => {
       );
     }
     
-    // Salva il PDF
     const fileName = `Esami_Mancanti_${selectedPatient.lastName}_${selectedPatient.firstName}_${new Date().toISOString().split('T')[0]}.pdf`;
     doc.save(fileName);
     
@@ -407,34 +288,38 @@ const AggiuntaPazientePage = () => {
         <div className="space-y-2">
           <Label htmlFor="cf">Codice Fiscale</Label>
           <div className="flex gap-2">
-            <Input 
-              id="cf" 
-              placeholder="Inserisci il codice fiscale..." 
-              value={searchTerm} 
-              onChange={(e) => setSearchTerm(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-              className="flex-1" 
-              disabled={isSearching}
-            />
-            <Button onClick={handleSearch} disabled={isSearching}>
-              {isSearching ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Ricerca...
-                </>
-              ) : (
-                <>
-                  <Search className="w-4 h-4" />
-                </>
-              )}
-            </Button>
+            <Input id="cf" placeholder="Inserisci il codice fiscale..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="flex-1" />
+            <Button onClick={handleSearch}><Search className="w-4 h-4" /></Button>
           </div>
         </div>
 
-        {isSearching && (
-          <div className="text-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-sm text-muted-foreground">Ricerca in corso...</p>
+        {hasSearched && (
+          <div className="space-y-3">
+            <h3 className="font-medium">Risultati della ricerca:</h3>
+            {searchResults.length > 0 ? (
+              searchResults.map(p => (
+                <div key={p.id} className="p-4 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => handleSelectPatient(p)}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                        <User className="w-5 h-5 text-primary" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold">{p.firstName} {p.lastName}</h4>
+                        <p className="text-sm text-muted-foreground">CF: {p.fiscalCode} • Nata/o {p.birthDate}</p>
+                      </div>
+                    </div>
+                    {p.disability?.active ? <Badge variant="secondary">Invalidità attiva</Badge> : null}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <User className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <p>Nessun paziente trovato</p>
+                <p className="text-sm mt-2">Verifica il codice fiscale inserito</p>
+              </div>
+            )}
           </div>
         )}
       </CardContent>
@@ -485,7 +370,6 @@ const AggiuntaPazientePage = () => {
           </div>
         </div>
 
-        {/* Informazioni di contatto */}
         <div className="p-5 border-2 rounded-lg space-y-5 bg-white">
           <h3 className="font-semibold text-lg">Informazioni di contatto</h3>
           
@@ -550,21 +434,13 @@ const AggiuntaPazientePage = () => {
                 <SelectValue placeholder="Seleziona PDTA" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="prostata">Prostata</SelectItem>
-                <SelectItem value="colon">Colon</SelectItem>
-                <SelectItem value="retto">Retto</SelectItem>
                 <SelectItem value="mammella">Mammella</SelectItem>
-                <SelectItem value="snc">Sistema Nervoso Centrale</SelectItem>
-                <SelectItem value="polmone">Polmone</SelectItem>
-                <SelectItem value="stomaco">Stomaco</SelectItem>
                 <SelectItem value="melanoma">Melanoma</SelectItem>
                 <SelectItem value="sarcoma">Sarcoma</SelectItem>
-                <SelectItem value="stomaco-2">Stomaco</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          {/* Esami/visite richiesti per prima visita oncologica - dinamico per tutti i PDTA */}
           {selectedPdta && ESAMI_VISITE_RICHIESTI[selectedPdta] && (
             <div className="p-5 border-2 rounded-lg space-y-4 bg-white">
               <h3 className="font-semibold text-lg">Esami/visite richiesti per prima visita oncologica</h3>
@@ -646,7 +522,6 @@ const AggiuntaPazientePage = () => {
           <CheckCircle className="w-5 h-5 text-green-600" />
           Step 3: Completato
         </CardTitle>
-  
       </CardHeader>
       <CardContent className="text-center space-y-6">
         <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
@@ -661,7 +536,7 @@ const AggiuntaPazientePage = () => {
             <Download className="w-4 h-4" />
             Scarica PDF Esami Mancanti
           </Button>
-          <Button onClick={() => navigate('/oncologico/case-manager/pazienti')}>Vai alla Lista Pazienti</Button>
+          <Button onClick={() => navigate('/oncologico/case-manager/mammella-sarcomi-melanomi/elenco-pazienti')}>Vai alla Lista Pazienti</Button>
         </div>
       </CardContent>
     </Card>
@@ -673,7 +548,7 @@ const AggiuntaPazientePage = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" onClick={() => navigate('/oncologico/case-manager')}>
+            <Button variant="ghost" size="sm" onClick={() => navigate('/oncologico/case-manager/mammella-sarcomi-melanomi')}>
               <ArrowLeft className="w-4 h-4 mr-2" />
               Indietro
             </Button>
@@ -710,6 +585,5 @@ const AggiuntaPazientePage = () => {
   );
 };
 
-export default AggiuntaPazientePage;
-
+export default TriageMammellaSarcomiMelanomi;
 

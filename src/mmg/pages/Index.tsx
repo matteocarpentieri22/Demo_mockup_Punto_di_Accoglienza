@@ -34,9 +34,7 @@ const Index = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="text-center">
-              <p className="text-sm text-gray-500 mb-6 leading-relaxed">
-                Se conosci già il PDTA appropriato, selezionalo direttamente e verifica che il paziente soddisfi tutti i criteri di accesso.
-              </p>
+            
               <Button
                 className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 px-4 rounded-xl font-semibold text-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:from-blue-600 hover:to-blue-700"
                 variant="default"
@@ -56,20 +54,18 @@ const Index = () => {
               <div className="mx-auto mb-4 w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:from-blue-600 hover:to-blue-700">
                 <MessageSquare className="w-8 h-8 text-white" />
               </div>
-              <CardTitle className="text-2xl font-bold text-gray-800">Consulta PDTA</CardTitle>
+              <CardTitle className="text-2xl font-bold text-gray-800">Chatbot PDTA</CardTitle>
               <CardDescription className="text-base text-gray-600">
-                Consulta i PDTA regionali in base alle esigenze del tuo paziente
+                Agente virtuale informativo sui PDTA
               </CardDescription>
             </CardHeader>
             <CardContent className="text-center">
-              <p className="text-sm text-gray-500 mb-6 leading-relaxed">
-                Il chatbot ti guiderà attraverso domande mirate per identificare il percorso diagnostico-terapeutico appropriato per il tuo paziente.
-              </p>
+            
               <Button
                 className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 px-4 rounded-xl font-semibold text-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:from-blue-600 hover:to-blue-700"
                 size="lg"
               >
-                Avvia Autovalutazione
+                Avvia Chatbot
               </Button>
             </CardContent>
           </Card>

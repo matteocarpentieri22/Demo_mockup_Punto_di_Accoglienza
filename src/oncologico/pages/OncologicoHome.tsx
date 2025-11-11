@@ -31,7 +31,7 @@ const OncologicoHome = () => {
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold">Portale Personale IOV</h1>
-          <p className="text-muted-foreground">Versione 2 - Profili distinti per oncologi e case manager</p>
+          <p className="text-muted-foreground">Profili distinti per oncologi e case manager</p>
         </div>
 
         {/* Profili disponibili */}
@@ -99,6 +99,40 @@ const OncologicoHome = () => {
                 </div>
               </div>
               <Button className="w-full mt-4" onClick={() => navigate('/oncologico/case-manager')}>
+                Accedi al Profilo Case Manager
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Profilo Case Manager - Mammella, Sarcomi e Melanomi */}
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/oncologico/case-manager/mammella-sarcomi-melanomi')}>
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center">
+                  <Heart className="w-6 h-6 text-pink-600" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl">Case Manager - Mammella, Sarcomi e Melanomi</CardTitle>
+                  <CardDescription>Gestione pazienti per PDTA specifici</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <User className="w-4 h-4" />
+                  <span>Elenco pazienti ordinato per score</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Calendar className="w-4 h-4" />
+                  <span>Gestione calendario ambulatori</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <FileText className="w-4 h-4" />
+                  <span>Prenotazioni CUP e gestione slot</span>
+                </div>
+              </div>
+              <Button className="w-full mt-4" onClick={() => navigate('/oncologico/case-manager/mammella-sarcomi-melanomi')}>
                 Accedi al Profilo Case Manager
               </Button>
             </CardContent>

@@ -10,6 +10,23 @@ import { ArrowLeft, Calendar, Clock, CheckCircle, AlertCircle, Plus, Download, F
 import CaseManagerNavbar from "@/oncologico/components/layout/CaseManagerNavbar";
 import { useNavigate } from "react-router-dom";
 
+interface Slot {
+  ora: string;
+  paziente: string;
+  tipo: string;
+  medico: string;
+  stato: string;
+  cf: string;
+}
+
+interface DailyData {
+  [ambulatorio: string]: Slot[];
+}
+
+interface CalendarData {
+  [date: string]: DailyData;
+}
+
 const CalendarioPage = () => {
   const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState("2024-01-15");
@@ -17,7 +34,7 @@ const CalendarioPage = () => {
   const [showBlockSlotDialog, setShowBlockSlotDialog] = useState(false);
 
   // Mock data calendario esteso
-  const [calendarData] = useState({
+  const [calendarData] = useState<CalendarData>({
     "2024-01-15": {
       "Cure Simultanee": [
         { ora: "09:00", paziente: "Mario Rossi", tipo: "Visita", medico: "Dr. Bianchi", stato: "confermata", cf: "RSSMRA80A01H501U" },
@@ -84,7 +101,7 @@ const CalendarioPage = () => {
   };
 
   const handleExportDay = () => {
-    const dailyData = calendarData[selectedDate as keyof typeof calendarData] || {};
+    const dailyData: DailyData = calendarData[selectedDate] || {};
     const reportContent = [
       `Riepilogo Giornaliero Ambulatori - ${selectedDate}`,
       "",
@@ -104,7 +121,7 @@ const CalendarioPage = () => {
   };
 
   const handleExportVisits = () => {
-    const dailyData = calendarData[selectedDate as keyof typeof calendarData] || {};
+    const dailyData: DailyData = calendarData[selectedDate] || {};
     const visits = Object.entries(dailyData).flatMap(([ambulatorio, slots]) =>
       slots.filter(slot => slot.paziente).map(slot => ({
         ambulatorio,
@@ -137,9 +154,9 @@ const CalendarioPage = () => {
     window.URL.revokeObjectURL(url);
   };
 
-  const filteredData = selectedAmbulatorio === "tutti" 
-    ? calendarData[selectedDate as keyof typeof calendarData] || {}
-    : { [selectedAmbulatorio]: calendarData[selectedDate as keyof typeof calendarData]?.[selectedAmbulatorio] || [] };
+  const filteredData: DailyData = selectedAmbulatorio === "tutti" 
+    ? calendarData[selectedDate] || {}
+    : { [selectedAmbulatorio]: calendarData[selectedDate]?.[selectedAmbulatorio] || [] };
 
   return (
     <div className="min-h-screen bg-background">

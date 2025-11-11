@@ -6,6 +6,7 @@ import { Route } from "react-router-dom";
 import SystemSelector from "@/mmg/pages/SystemSelector";
 import Index from "@/mmg/pages/Index";
 import Documenti from "@/mmg/pages/Documenti";
+import LinkUtili from "@/mmg/pages/LinkUtili";
 import NotFound from "@/mmg/pages/NotFound";
 import PazienteHome from "@/paziente/pages/PazienteHome";
 import QuestionnaireCompilation from "@/paziente/pages/QuestionnaireCompilation";
@@ -20,6 +21,7 @@ export const AppRoutes = () => (
     <Route path="/" element={<SystemSelector />} />
     <Route path="/mmg" element={<Index />} />
     <Route path="/mmg/documenti" element={<Documenti />} />
+    <Route path="/mmg/link-utili" element={<LinkUtili />} />
     
     {/* Rotte Oncologico */}
     <OncologicoRoutes />

@@ -4,14 +4,13 @@ import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { Badge } from "@/shared/components/ui/badge";
-import { ArrowLeft, Search, User, AlertCircle, CheckCircle } from "lucide-react";
+import { ArrowLeft, Search, AlertCircle } from "lucide-react";
 import CaseManagerNavbar from "@/oncologico/components/layout/CaseManagerNavbar";
 import { useNavigate } from "react-router-dom";
 
 const RicercaPazientePage = () => {
   const navigate = useNavigate();
   const [searchCF, setSearchCF] = useState("");
-  const [searchResult, setSearchResult] = useState<any>(null);
   const [isSearching, setIsSearching] = useState(false);
 
   // Mock data pazienti (stesso del CaseManagerPage)
@@ -156,46 +155,19 @@ const RicercaPazientePage = () => {
 
     setIsSearching(true);
     
-    // Simula ricerca
+    // Simula ricerca e naviga direttamente alla pagina di dettaglio completa
     setTimeout(() => {
       const patient = patients.find(p => p.cf.toLowerCase().includes(searchCF.toLowerCase()));
       if (patient) {
-        setSearchResult(patient);
+        // Naviga direttamente alla pagina di dettaglio completa
+        navigate(`/oncologico/paziente/${patient.cf}`);
       } else {
-        // Per la demo, generiamo un paziente mock se non trovato
-        const mockPatient = {
-          id: 999,
-          cognome: "Demo",
-          nome: "Paziente",
-          cf: searchCF.toUpperCase(),
-          pdta: "Polmone",
-          visitaRichiesta: "Visita Oncologica",
-          medicoMittente: "Dr. Bianchi",
-          score: Math.floor(Math.random() * 6) + 3, // Score tra 3 e 8
-          slotPrenotato: Math.random() > 0.5,
-          dataPrenotazione: Math.random() > 0.5 ? "2024-01-25" : null,
-          oraPrenotazione: Math.random() > 0.5 ? "10:30" : null,
-          ambulatorio: Math.random() > 0.5 ? "Cure Simultanee" : null,
-          comorbidita: ["Diabete tipo 2", "Ipertensione"],
-          storicoVisite: [
-            { data: "2024-01-20", tipo: "Prima visita", medico: "Dr. Bianchi", esito: "Diagnosi in corso" },
-            { data: "2024-01-15", tipo: "Visita controllo", medico: "Dr. Verdi", esito: "Stabile" }
-          ],
-          storicoScore: [
-            { data: "2024-01-20", score: Math.floor(Math.random() * 6) + 3, parametri: { tosse: Math.floor(Math.random() * 3) + 1, dolore: Math.floor(Math.random() * 3) + 1, comorbidita: Math.floor(Math.random() * 3) + 1 } },
-            { data: "2024-01-15", score: Math.floor(Math.random() * 6) + 3, parametri: { tosse: Math.floor(Math.random() * 3) + 1, dolore: Math.floor(Math.random() * 3) + 1, comorbidita: Math.floor(Math.random() * 3) + 1 } }
-          ]
-        };
-        setSearchResult(mockPatient);
+        // Per la demo, naviga comunque alla pagina di dettaglio con il CF inserito
+        // La pagina PazienteDetailPage gestirà il caso paziente non trovato
+        navigate(`/oncologico/paziente/${searchCF.toUpperCase()}`);
       }
       setIsSearching(false);
-    }, 1000);
-  };
-
-  const getScoreColor = (score: number) => {
-    if (score >= 7) return "bg-red-100 text-red-800";
-    if (score >= 5) return "bg-yellow-100 text-yellow-800";
-    return "bg-green-100 text-green-800";
+    }, 500);
   };
 
   return (
@@ -218,169 +190,58 @@ const RicercaPazientePage = () => {
         </div>
 
         {/* Ricerca */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Search className="w-5 h-5" />
-              Ricerca Paziente
-            </CardTitle>
-            <CardDescription>
-              Inserisci il codice fiscale del paziente per visualizzare tutti i dettagli
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex gap-4">
-              <div className="flex-1">
-                <Label htmlFor="cf">Codice Fiscale</Label>
-                <Input
-                  id="cf"
-                  placeholder="Es. RSSMRA80A01H501U"
-                  value={searchCF}
-                  onChange={(e) => setSearchCF(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSearchPatient()}
-                />
-              </div>
-              <div className="flex items-end">
-                <Button 
-                  onClick={handleSearchPatient} 
-                  disabled={isSearching}
-                  className="min-w-[120px]"
-                >
-                  {isSearching ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Ricerca...
-                    </>
-                  ) : (
-                    <>
-                      <Search className="w-4 h-4 mr-2" />
-                      Cerca
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
-            
-            {/* Messaggio demo */}
-            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <div className="flex items-center gap-2 text-blue-800">
-                <AlertCircle className="w-4 h-4" />
-                <span className="text-sm font-medium">Demo Mode</span>
-              </div>
-              <p className="text-sm text-blue-700 mt-1">
-                Inserisci qualsiasi codice fiscale per testare la funzionalità. Se il paziente non esiste, verrà generato un paziente demo.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Risultato Ricerca */}
-        {searchResult && (
-          <Card>
+        <div className="max-w-3xl mx-auto">
+          <Card className="mb-6">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <User className="w-5 h-5" />
-                Risultato Ricerca
-                {searchResult.id === 999 && (
-                  <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                    Demo
-                  </Badge>
-                )}
+                <Search className="w-5 h-5" />
+                Ricerca Paziente
               </CardTitle>
               <CardDescription>
-                Dettagli completi del paziente trovato
+                Inserisci il codice fiscale del paziente per visualizzare tutti i dettagli
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="grid md:grid-cols-2 gap-6">
-                {/* Informazioni principali */}
-                <div>
-                  <h4 className="font-semibold mb-3">Informazioni Generali</h4>
-                  <div className="space-y-2 text-sm">
-                    <p><strong>Nome:</strong> {searchResult.nome} {searchResult.cognome}</p>
-                    <p><strong>Codice Fiscale:</strong> <span className="font-mono">{searchResult.cf}</span></p>
-                    <p><strong>PDTA:</strong> {searchResult.pdta}</p>
-                    <p><strong>Score Attuale:</strong> <Badge className={getScoreColor(searchResult.score)}>{searchResult.score}</Badge></p>
-                    <p><strong>Comorbidità:</strong> {searchResult.comorbidita.length > 0 ? searchResult.comorbidita.join(", ") : "Nessuna"}</p>
-                  </div>
-                </div>
-
-                {/* Stato prenotazione */}
-                <div>
-                  <h4 className="font-semibold mb-3">Stato Prenotazione</h4>
-                  <div className="space-y-2 text-sm">
-                    <p><strong>Visita Richiesta:</strong> {searchResult.visitaRichiesta}</p>
-                    <p><strong>Medico Mittente:</strong> {searchResult.medicoMittente}</p>
-                    {searchResult.slotPrenotato ? (
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="cf">Codice Fiscale</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="cf"
+                    placeholder="Inserisci il codice fiscale..."
+                    value={searchCF}
+                    onChange={(e) => setSearchCF(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleSearchPatient()}
+                    className="flex-1"
+                    disabled={isSearching}
+                  />
+                  <Button 
+                    onClick={handleSearchPatient} 
+                    disabled={isSearching}
+                  >
+                    {isSearching ? (
                       <>
-                        <p><strong>Stato:</strong> <Badge className="bg-green-100 text-green-800">Prenotato</Badge></p>
-                        <p><strong>Data:</strong> {searchResult.dataPrenotazione}</p>
-                        <p><strong>Ora:</strong> {searchResult.oraPrenotazione}</p>
-                        <p><strong>Ambulatorio:</strong> {searchResult.ambulatorio}</p>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Ricerca...
                       </>
                     ) : (
-                      <p><strong>Stato:</strong> <Badge variant="secondary">Da Prenotare</Badge></p>
+                      <>
+                        <Search className="w-4 h-4" />
+                      </>
                     )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Storico Score */}
-              <div className="mt-6">
-                <h4 className="font-semibold mb-3">Storico Score Clinico</h4>
-                <div className="space-y-2">
-                  {searchResult.storicoScore.map((scoreEntry: any, index: number) => (
-                    <div key={index} className="p-3 bg-muted rounded-lg">
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="font-medium">{scoreEntry.data}</span>
-                        <Badge className={getScoreColor(scoreEntry.score)}>
-                          Score: {scoreEntry.score}
-                        </Badge>
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        Tosse: {scoreEntry.parametri.tosse} | Dolore: {scoreEntry.parametri.dolore} | Comorbidità: {scoreEntry.parametri.comorbidita}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Storico Visite */}
-              <div className="mt-6">
-                <h4 className="font-semibold mb-3">Storico Visite</h4>
-                <div className="space-y-2">
-                  {searchResult.storicoVisite.map((visita: any, index: number) => (
-                    <div key={index} className="p-3 border rounded-lg">
-                      <div className="flex justify-between items-start mb-1">
-                        <span className="font-medium">{visita.tipo}</span>
-                        <span className="text-sm text-muted-foreground">{visita.data}</span>
-                      </div>
-                      <div className="text-sm text-muted-foreground mb-1">
-                        Medico: {visita.medico}
-                      </div>
-                      <div className="text-sm">
-                        <strong>Esito:</strong> {visita.esito}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Azioni */}
-              <div className="mt-6 flex gap-2">
-                <Button onClick={() => navigate(`/oncologico/paziente/${searchResult.cf}`)}>
-                  <User className="w-4 h-4 mr-2" />
-                  Visualizza Dettagli Completi
-                </Button>
-                {!searchResult.slotPrenotato && (
-                  <Button variant="outline">
-                    Prenota Visita
                   </Button>
-                )}
+                </div>
               </div>
+              
+              {isSearching && (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                  <p className="text-sm text-muted-foreground">Ricerca in corso...</p>
+                </div>
+              )}
             </CardContent>
           </Card>
-        )}
+        </div>
+
       </div>
     </div>
   );

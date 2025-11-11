@@ -20,27 +20,6 @@ import { useNavigate } from "react-router-dom";
 
 // Definizione documentazione richiesta per ogni PDTA
 const PDTA_DOCUMENTATION = {
-  "Polmone": [
-    "Rx torace",
-    "TC torace",
-    "Visita pneumologica",
-    "Biopsia ed esame istologico"
-  ],
-  "Prostata": [
-    "Visita urologica + ER + PSA",
-    "RM prostatica multiparametrica",
-    "Biopsia prostatica"
-  ],
-  "Colon": [
-    "Visita specialistica (gastroenterologo o chirurgo)",
-    "Pancolonscopia con biopsia",
-    "Esame istologico"
-  ],
-  "Retto": [
-    "Visita specialistica (gastroenterologo o chirurgo)",
-    "Pancolonscopia con biopsia",
-    "Esame istologico"
-  ],
   "Melanoma": [
     "Visita dermatologica con dermatoscopia o chirurgica per neoformazioni",
     "Biopsia escissionale ed esame istologico"
@@ -51,19 +30,11 @@ const PDTA_DOCUMENTATION = {
     "Ecografia bilaterale",
     "Biopsia ed esame istologico"
   ],
-  "Stomaco": [
-    "EGDS (Esofagogastroduodenoscopia) con biopsia",
-    "Esame istologico"
-  ],
   "Sarcomi dei tessuti molli": [
     "Visita chirurgica",
     "Ecografia dei tessuti molli",
     "Risonanza magnetica (eventualmente con ecografia)",
     "Biopsia ed esame istologico"
-  ],
-  "Sistema nervoso centrale": [
-    "Visita neurologica",
-    "Risonanza Magnetica (RMN) o Tomografia Computerizzata (TC)"
   ]
 };
 
@@ -87,51 +58,8 @@ interface PazienteTriage {
   documentazione: Documento[];
 }
 
-// Mock data per pazienti con triage completato
+// Mock data per pazienti con triage completato - solo Mammella, Sarcomi e Melanomi
 const mockPatientsTriage: PazienteTriage[] = [
-  {
-    id: 1,
-    nome: "Mario",
-    cognome: "Rossi",
-    codiceFiscale: "RSSMRA65A01H501U",
-    dataNascita: "1965-01-15",
-    pdta: "Polmone",
-    dataTriage: "2024-01-10",
-    documentazione: [
-      {
-        id: "1",
-        nome: "Rx torace",
-        tipo: "Radiologia",
-        dataCaricamento: "2024-01-08",
-        fileUrl: "rx_torace_rossi.pdf",
-        caricato: true
-      },
-      {
-        id: "2",
-        nome: "TC torace",
-        tipo: "Radiologia",
-        dataCaricamento: "2024-01-09",
-        fileUrl: "tc_torace_rossi.pdf",
-        caricato: true
-      },
-      {
-        id: "3",
-        nome: "Visita pneumologica",
-        tipo: "Visita specialistica",
-        dataCaricamento: "2024-01-09",
-        fileUrl: "visita_pneumologica_rossi.pdf",
-        caricato: true
-      },
-      {
-        id: "4",
-        nome: "Biopsia ed esame istologico",
-        tipo: "Esame istologico",
-        dataCaricamento: "",
-        fileUrl: "",
-        caricato: false
-      }
-    ]
-  },
   {
     id: 2,
     nome: "Giulia",
@@ -176,76 +104,6 @@ const mockPatientsTriage: PazienteTriage[] = [
     ]
   },
   {
-    id: 3,
-    nome: "Antonio",
-    cognome: "Verdi",
-    codiceFiscale: "VRDNTN58C12H501W",
-    dataNascita: "1958-03-25",
-    pdta: "Prostata",
-    dataTriage: "2024-01-14",
-    documentazione: [
-      {
-        id: "1",
-        nome: "Visita urologica + ER + PSA",
-        tipo: "Visita specialistica",
-        dataCaricamento: "2024-01-13",
-        fileUrl: "visita_urologica_verdi.pdf",
-        caricato: true
-      },
-      {
-        id: "2",
-        nome: "RM prostatica multiparametrica",
-        tipo: "Risonanza magnetica",
-        dataCaricamento: "2024-01-13",
-        fileUrl: "rm_prostata_verdi.pdf",
-        caricato: true
-      },
-      {
-        id: "3",
-        nome: "Biopsia prostatica",
-        tipo: "Biopsia",
-        dataCaricamento: "",
-        fileUrl: "",
-        caricato: false
-      }
-    ]
-  },
-  {
-    id: 4,
-    nome: "Elena",
-    cognome: "Neri",
-    codiceFiscale: "NRELNE80D25H501X",
-    dataNascita: "1980-04-10",
-    pdta: "Colon",
-    dataTriage: "2024-01-15",
-    documentazione: [
-      {
-        id: "1",
-        nome: "Visita specialistica (gastroenterologo o chirurgo)",
-        tipo: "Visita specialistica",
-        dataCaricamento: "2024-01-14",
-        fileUrl: "visita_gastroenterologica_neri.pdf",
-        caricato: true
-      },
-      {
-        id: "2",
-        nome: "Pancolonscopia con biopsia",
-        tipo: "Endoscopia",
-        dataCaricamento: "2024-01-14",
-        fileUrl: "pancolonscopia_neri.pdf",
-        caricato: true
-      },
-      {
-        id: "3",
-        nome: "Esame istologico",
-        tipo: "Esame istologico",
-        dataCaricamento: "2024-01-15",
-        fileUrl: "istologico_neri.pdf",
-        caricato: true
-      }
-    ]
-  },
-  {
     id: 5,
     nome: "Francesco",
     cognome: "Gialli",
@@ -269,68 +127,6 @@ const mockPatientsTriage: PazienteTriage[] = [
         dataCaricamento: "",
         fileUrl: "",
         caricato: false
-      }
-    ]
-  },
-  {
-    id: 6,
-    nome: "Sofia",
-    cognome: "Marino",
-    codiceFiscale: "MRNSFA75F20H501Z",
-    dataNascita: "1975-06-22",
-    pdta: "Retto",
-    dataTriage: "2024-01-17",
-    documentazione: [
-      {
-        id: "1",
-        nome: "Visita specialistica (gastroenterologo o chirurgo)",
-        tipo: "Visita specialistica",
-        dataCaricamento: "2024-01-16",
-        fileUrl: "visita_chirurgica_marino.pdf",
-        caricato: true
-      },
-      {
-        id: "2",
-        nome: "Pancolonscopia con biopsia",
-        tipo: "Endoscopia",
-        dataCaricamento: "2024-01-16",
-        fileUrl: "pancolonscopia_marino.pdf",
-        caricato: true
-      },
-      {
-        id: "3",
-        nome: "Esame istologico",
-        tipo: "Esame istologico",
-        dataCaricamento: "",
-        fileUrl: "",
-        caricato: false
-      }
-    ]
-  },
-  {
-    id: 7,
-    nome: "Luca",
-    cognome: "Ferrari",
-    codiceFiscale: "FRRLCU68G15H501A",
-    dataNascita: "1968-07-30",
-    pdta: "Stomaco",
-    dataTriage: "2024-01-18",
-    documentazione: [
-      {
-        id: "1",
-        nome: "EGDS (Esofagogastroduodenoscopia) con biopsia",
-        tipo: "Endoscopia",
-        dataCaricamento: "2024-01-17",
-        fileUrl: "egds_ferrari.pdf",
-        caricato: true
-      },
-      {
-        id: "2",
-        nome: "Esame istologico",
-        tipo: "Esame istologico",
-        dataCaricamento: "2024-01-17",
-        fileUrl: "istologico_ferrari.pdf",
-        caricato: true
       }
     ]
   },
@@ -376,37 +172,10 @@ const mockPatientsTriage: PazienteTriage[] = [
         caricato: false
       }
     ]
-  },
-  {
-    id: 9,
-    nome: "Anna",
-    cognome: "Conti",
-    codiceFiscale: "CNTANN82I25H501C",
-    dataNascita: "1982-09-05",
-    pdta: "Sistema nervoso centrale",
-    dataTriage: "2024-01-20",
-    documentazione: [
-      {
-        id: "1",
-        nome: "Visita neurologica",
-        tipo: "Visita specialistica",
-        dataCaricamento: "2024-01-19",
-        fileUrl: "visita_neurologica_conti.pdf",
-        caricato: true
-      },
-      {
-        id: "2",
-        nome: "Risonanza Magnetica (RMN) o Tomografia Computerizzata (TC)",
-        tipo: "Risonanza magnetica",
-        dataCaricamento: "2024-01-19",
-        fileUrl: "rmn_conti.pdf",
-        caricato: true
-      }
-    ]
   }
 ];
 
-const ElencoPazientiPage = () => {
+const ElencoPazientiMammellaSarcomiMelanomi = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -417,7 +186,7 @@ const ElencoPazientiPage = () => {
   );
 
   const handleViewDocumentation = (patient: PazienteTriage) => {
-    navigate(`/oncologico/case-manager/elenco-pazienti/${patient.id}`);
+    navigate(`/oncologico/case-manager/mammella-sarcomi-melanomi/elenco-pazienti/${patient.id}`);
   };
 
   const getDocumentStatus = (patient: PazienteTriage) => {
@@ -456,7 +225,7 @@ const ElencoPazientiPage = () => {
           <Button 
             variant="ghost" 
             size="sm" 
-            onClick={() => navigate('/oncologico/case-manager')} 
+            onClick={() => navigate('/oncologico/case-manager/mammella-sarcomi-melanomi')} 
             className="text-sm sm:text-base hover:bg-blue-50"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -472,10 +241,10 @@ const ElencoPazientiPage = () => {
             </div>
             <div>
               <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
-                Elenco Pazienti con Triage
+                Elenco Pazienti con Triage - Mammella, Sarcomi e Melanomi
               </h1>
               <p className="text-muted-foreground text-sm sm:text-base mt-1">
-                Visualizza l'elenco dei pazienti che hanno completato il triage e la loro documentazione
+                Visualizza l'elenco dei pazienti che hanno completato il triage per Mammella, Sarcomi e Melanomi
               </p>
             </div>
           </div>
@@ -586,11 +355,9 @@ const ElencoPazientiPage = () => {
                     className="group relative p-5 rounded-xl border-2 cursor-pointer transition-all duration-300 bg-white border-gray-200 hover:border-blue-400 hover:shadow-xl hover:scale-[1.02] overflow-hidden"
                     onClick={() => handleViewDocumentation(patient)}
                   >
-                    {/* Gradient overlay on hover */}
                     <div className="absolute inset-0 bg-gradient-to-r from-blue-50/0 to-indigo-50/0 group-hover:from-blue-50/50 group-hover:to-indigo-50/50 transition-all duration-300 rounded-xl" />
                     
                     <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                      {/* Left Section - Patient Info */}
                       <div className="flex items-start gap-4 flex-1">
                         <div className={`w-16 h-16 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg transition-transform duration-300 group-hover:scale-110 ${
                           isComplete 
@@ -628,7 +395,6 @@ const ElencoPazientiPage = () => {
                             </div>
                           </div>
                           
-                          {/* Progress Bar */}
                           <div className="mt-3">
                             <div className="flex items-center justify-between mb-1">
                               <span className="text-xs font-medium text-gray-600">Documentazione</span>
@@ -650,7 +416,6 @@ const ElencoPazientiPage = () => {
                         </div>
                       </div>
 
-                      {/* Right Section - Status & Action */}
                       <div className="flex items-center gap-4 flex-shrink-0">
                         <div className="flex flex-col items-end gap-2">
                           <Badge 
@@ -706,4 +471,5 @@ const ElencoPazientiPage = () => {
   );
 };
 
-export default ElencoPazientiPage;
+export default ElencoPazientiMammellaSarcomiMelanomi;
+

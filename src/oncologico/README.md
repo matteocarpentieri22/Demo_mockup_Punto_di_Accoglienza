@@ -290,7 +290,7 @@ Questa è la versione alternativa del modulo oncologico che presenta profili dis
 - Pagina singola con dashboard e gestione pazienti
 - Approccio generale senza distinzioni di ruolo
 
-### Versione 2 (Nuova)
+### Versione Attuale
 - **Profili distinti:** Oncologo/Radioterapista vs Case Manager
 - **Funzionalità specializzate:** Form prenotazione vs Gestione pazienti
 - **Workflow specifici:** Ogni profilo ha strumenti dedicati
