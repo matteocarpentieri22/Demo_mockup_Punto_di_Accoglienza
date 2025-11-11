@@ -19,7 +19,7 @@ const SystemSelector = () => {
             <div className="mx-auto mb-8 w-24 h-24 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-3xl flex items-center justify-center shadow-2xl animate-pulse">
               <Building2 className="w-12 h-12 text-white" />
             </div>
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent mb-6">
+            <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent mb-6 leading-normal pb-2 overflow-visible">
               Istituto Oncologico Veneto
             </h1>
             <p className="text-xl text-slate-600 mb-2">Seleziona il sistema di accesso</p>
