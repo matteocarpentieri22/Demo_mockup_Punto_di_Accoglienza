@@ -20,7 +20,7 @@ export function ChatbotFullscreen({ open, onOpenChange }: ChatbotFullscreenProps
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "Buongiorno, sono l'assistente virtuale IOV. Ti aiuterò a identificare il PDTA più appropriato per il tuo paziente. Iniziamo con alcune domande generali. Qual è l'età del paziente?",
+      content: "Ciao! Sono il tuo assistente per i PDTA dell'IOV.\n\nPosso aiutarti a valutare casi clinici, identificare gli esami preliminari necessari e interpretare i Percorsi Diagnostico-Terapeutici.\n\nLe mie risposte si basano esclusivamente sui documenti PDTA caricati.\n\nDescrivi il caso clinico o fai una domanda per iniziare.",
       timestamp: new Date()
     }
   ]);
@@ -95,7 +95,7 @@ export function ChatbotFullscreen({ open, onOpenChange }: ChatbotFullscreenProps
     setMessages([
       {
         role: "assistant",
-        content: "Buongiorno, sono l'assistente virtuale IOV. Ti aiuterò a identificare il PDTA più appropriato per il tuo paziente. Iniziamo con alcune domande generali. Qual è l'età del paziente?",
+        content: "Ciao! Sono il tuo assistente per i PDTA dell'IOV.\n\nPosso aiutarti a valutare casi clinici, identificare gli esami preliminari necessari e interpretare i Percorsi Diagnostico-Terapeutici.\n\nLe mie risposte si basano esclusivamente sui documenti PDTA caricati.\n\nDescrivi il caso clinico o fai una domanda per iniziare.",
         timestamp: new Date()
       }
     ]);
